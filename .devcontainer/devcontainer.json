@@ -1,0 +1,12 @@
+{
+    // We use a minimal base image
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+        // Enable SSH access in Codespaces
+        "ghcr.io/devcontainers/features/sshd:1": {},
+        // All dev tools are managed by mise
+        "ghcr.io/atty303/devcontainer-features/mise:1": {
+            "activate": "shims"
+        }
+    }
+}
