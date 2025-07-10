@@ -18,9 +18,9 @@ Currently, it supports the following games:
 
 Konaste games authenticate your subscription in the browser, then launch the
 game launcher via a custom URL scheme that includes an authorization token.
-Since the standalone executable won't run by itself, traditional launchers like Lutris
-cannot be used. This tool automates the registration of URL schemes in Linux
-desktop environments and provides support for configuring Wine.
+Since the standalone executable won't run by itself, traditional launchers like
+Lutris cannot be used. This tool automates the registration of URL schemes in
+Linux desktop environments and provides support for configuring Wine.
 
 ## Prerequisites
 
@@ -67,6 +67,8 @@ konaste gitadora login
 > cause the game launch authorization to fail.
 
 ### Verified Configurations
+
+All game functionality has been tested on the following configurations:
 
 - Hardware: LENOVO ThinkCentre M715q
     - CPU: AMD Ryzen 5 PRO 2400GE (8C 3.20 GHz)
