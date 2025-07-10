@@ -102,7 +102,6 @@ async function run(opts: GlobalOptions & { url: string }) {
     }),
   });
 
-//  const exe = `${config.winePrefix}/drive_c/Games/GITADORA/launcher/modules/launcher.exe`;
   const exe = `c:\\Games\\GITADORA\\launcher\\modules\\launcher.exe`;
   await umu`umu-run ${exe} ${opts.url}`;
 }
