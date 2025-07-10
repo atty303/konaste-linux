@@ -1,3 +1,5 @@
+<img width="140" height="49" alt="logo_header" src="https://github.com/user-attachments/assets/d69237a7-152d-4d10-9b47-6cb96cefb324" />
+
 # Running konaste games on Linux
 
 This is a helper tool for running [コナステ(konaste)](https://p.eagate.573.jp/game/eacloud/re/video/video_top.html)
