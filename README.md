@@ -38,4 +38,23 @@ konaste gitadora ~/Downloads/GITRADORA_installer.msi
 
 ### GITADORA
 
-- If update process fails, try different Proton versions.
+- If the update process fails, try different Proton versions.
+
+## Development
+
+### Requirements
+
+1. Activate [mise](https://mise.jdx.dev/).
+2. Run `mise install` to install dependencies.
+3. Run `hk install` to install the git hooks for formatting and linting.
+
+### Local Development
+
+To install the tool from source, run the following command:
+
+```bash
+deno install -A --global -n konaste --config ./deno.jsonc src/main.ts
+```
+
+If you were not using compiled binary, can't probe how to run the tool from tool itself.
+You must specify the `--self-path` option to the installed `konaste` command.

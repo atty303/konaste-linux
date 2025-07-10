@@ -1,7 +1,10 @@
 [tools]
 deno = "latest"
+hk = "latest"
+pkl = "latest"
 
 [tasks.build]
+description = "Build the CLI binary"
 run = [
     "deno install",
     "deno compile -A --target $ARCH -o dist/konaste-$ARCH src/main.ts",
