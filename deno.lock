@@ -7,6 +7,7 @@
     "jsr:@cliffy/flags@1.0.0-rc.8": "1.0.0-rc.8",
     "jsr:@cliffy/internal@1.0.0-rc.8": "1.0.0-rc.8",
     "jsr:@cliffy/table@1.0.0-rc.8": "1.0.0-rc.8",
+    "jsr:@cliffy/table@^1.0.0-rc.8": "1.0.0-rc.8",
     "jsr:@david/console-static-text@0.3": "0.3.0",
     "jsr:@david/dax@*": "0.43.2",
     "jsr:@david/dax@~0.43.2": "0.43.2",
@@ -36,7 +37,7 @@
       "dependencies": [
         "jsr:@cliffy/flags",
         "jsr:@cliffy/internal",
-        "jsr:@cliffy/table",
+        "jsr:@cliffy/table@1.0.0-rc.8",
         "jsr:@std/fmt@~1.0.2",
         "jsr:@std/text"
       ]
@@ -128,6 +129,7 @@
     "dependencies": [
       "jsr:@404wolf/xdg-portable@0.1",
       "jsr:@cliffy/command@1.0.0-rc.8",
+      "jsr:@cliffy/table@^1.0.0-rc.8",
       "jsr:@david/dax@~0.43.2"
     ]
   }

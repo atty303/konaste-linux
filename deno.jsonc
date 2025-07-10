@@ -1,7 +1,8 @@
 {
   "imports": {
     "@404wolf/xdg-portable": "jsr:@404wolf/xdg-portable@^0.1.0",
-    "@cliffy/command": "jsr:@cliffy/command@1.0.0-rc.8",
+    "@cliffy/command": "jsr:@cliffy/command@^1.0.0-rc.8",
+    "@cliffy/table": "jsr:@cliffy/table@^1.0.0-rc.8",
     "@david/dax": "jsr:@david/dax@^0.43.2"
   },
   "nodeModulesDir": "auto"

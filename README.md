@@ -37,20 +37,29 @@ chmod +x ~/.local/bin/konaste
 
 ### GITADORA
 
-1. Download the installer from the official website.
+1. Download the installer from
+   the [official website](https://p.eagate.573.jp/game/eacgitadora/konagt//download/installer.html) (You need to log in
+   to your account).
 2. Run the following command to install it:
 
 ```bash
-konaste gitadora ~/Downloads/GITRADORA_installer.msi
+konaste gitadora install ~/Downloads/GITRADORA_installer.msi
 ```
 
 - Select the default options during installation.
-- This will install the game to `~/Games/gitadora`.
+- This will install the game to `~/.local/state/konaste/gitadora` (you can change this by passing the `--wine-prefix`
+  option).
 
-3. Launch the game from web browser.
+3. Run the following command to open the login page in your browser:
+
+```bash
+konaste gitadora login
+````
+
+4. After logging in, click the `ゲーム起動` button to launch the game.
 
 > [!WARNING]
-> After the launch completes, do not back to the previous page. It will cause
+> After the button clicked, do not back to the previous page. It will be
 > failed to authorize the game launch.
 
 ### Verified Configurations
@@ -60,6 +69,7 @@ konaste gitadora ~/Downloads/GITRADORA_installer.msi
     - GPU: AMD Radeon Vega 11 Graphics
     - RAM: 8 GB
 - OS: Bazzite 42 Desktop Edition (KDE Plasma 6)
+- Browser: Firefox 140
 - Proton: GE-Proton10-8
 - MIDI Drum: Roland TD-1 (USB)
 

@@ -10,13 +10,15 @@ import {
 } from "../utils.ts";
 import $ from "@david/dax";
 import { Command } from "@cliffy/command";
+import { Table } from "@cliffy/table";
 
 const def: GameDefinition = {
   id: "gitadora",
   name: "GITADORA (Konaste)",
   nameJA: "GITADORA (コナステ)",
   urlScheme: "konaste.gitadora",
-  loginUrl: "http://eagate.573.jp/game/konasteapp/API/login/login.html?game_id=gitadora",
+  loginUrl:
+    "http://eagate.573.jp/game/konasteapp/API/login/login.html?game_id=gitadora",
   proton: "GE-Proton",
 };
 
@@ -58,8 +60,29 @@ const run = runCommand(def)
     await umu$`umu-run ${exe} ${url}`;
   });
 
+const login = new Command()
+  .description("Open the login page in a browser")
+  .action(async () => {
+    await $`xdg-open ${def.loginUrl}`;
+  });
+
+const info = new Command()
+  .description("Describe the game")
+  .action(() => {
+    const table = new Table(
+      ["ID", def.id],
+      ["Name", def.name],
+      ["URL Scheme", def.urlScheme],
+      ["Login URL", def.loginUrl],
+      ["Proton", def.proton],
+    ).border();
+    table.render();
+  });
+
 export const gitadoraCommand = new Command()
   .description("Commands for GITADORA")
+  .command("info", info)
   .command("install", install)
   .command("configure", configure)
-  .command("run", run);
+  .command("run", run)
+  .command("login", login);
