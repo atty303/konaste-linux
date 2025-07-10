@@ -4,6 +4,6 @@ deno = "latest"
 [tasks.build]
 run = [
     "deno install",
-    "deno compile -A --target $ARCH -o dist/konaste-$ARCH gitadora.ts",
+    "deno compile -A --target $ARCH -o dist/konaste-$ARCH src/main.ts",
 ]
 env.ARCH = "x86_64-unknown-linux-gnu"
