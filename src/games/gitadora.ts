@@ -16,6 +16,7 @@ const def: GameDefinition = {
   name: "GITADORA (Konaste)",
   nameJA: "GITADORA (コナステ)",
   urlScheme: "konaste.gitadora",
+  loginUrl: "http://eagate.573.jp/game/konasteapp/API/login/login.html?game_id=gitadora",
   proton: "GE-Proton",
 };
 

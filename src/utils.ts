@@ -9,6 +9,7 @@ export type GameDefinition = {
   name: string;
   nameJA: string;
   urlScheme: string;
+  loginUrl: string;
   proton: string | undefined;
 };
 
