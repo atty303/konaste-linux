@@ -1,7 +1,10 @@
+---
 plugins:
   - @semantic-release/commit-analyzer
   - @semantic-release/release-notes-generator
-  -
-    - @semantic-release/github
-    - assets:
-        - path: dist/**
+  - @semantic-release/github
+
+publish:
+  - path: @semantic-release/github
+    assets:
+      - path: dist/**
