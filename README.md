@@ -47,7 +47,7 @@ or install it with [ubi](https://github.com/houseabsolute/ubi).
 ubi install -p atty303/konaste-linux -e konaste -i ~/.local/bin
 ```
 
-## Minimum installation
+## Minimum steps to run the games
 
 ### beatmania IIDX INFINTAS
 
@@ -81,7 +81,6 @@ konaste infinitas login
 ```
 
 6. After logging in, click the `ゲーム起動` button to launch the game launcher.
-
 7. After the launcher is started, click the `UPDATE` button to update the game.
 8. After the update is complete, click the `SETTING` button and set audio output to `WASAPI (共有モード)`(Shared Mode).
 
@@ -89,6 +88,8 @@ konaste infinitas login
 > Wine does not support WASAPI Exclusive Mode on `winepulse.drv`(PulseAudio), so you must use Shared Mode.
 
 ### GITADORA
+
+**This guide is outdated. Need to be updated.**
 
 1. Download the installer from the
    [official website](https://p.eagate.573.jp/game/eacgitadora/konagt/download/installer.html)
@@ -124,24 +125,46 @@ This command configures the environment for the specified game.
 - `konaste infinitas configure --run-command <command>`: Specifies the command to run the game.
   `%c` in command will be replaced with the actual windows command.
 
+### `konaste <game> create`
+
+This command creates a Wine prefix for the specified game.
+You must configure the prefix with the `configure` command before running this command.
+
+### `konaste <game> associate`
+
+This command registers the URL scheme for the specified game in the desktop environment.
+It allows you to launch the game from the browser.
+
 ### `konaste <game> exec <...command>`
 
-This command executes the specified command in the Wine environment of the game.
+This command executes the specified command in the Wine prefix of the game.
 
 - `konaste infinitas exec umu-run winetricks <verbs>`: Runs Winetricks with the specified verbs.
 - `konaste infinitas exec umu-run winecfg`: Opens the Wine configuration dialog.
+
+### `konaste <game> run <url>`
+
+This command is executed by the URL scheme registered by the `associate` command.
+It runs the game in GUI session, so logs are output to the systemd journal.
+
+### `konaste <game> login`
+
+This command opens the login page of the specified game in your default web browser.
 
 ## Tips
 
 ### Use gamescope
 
-To run the game with Gamescope, you can use the following command to configure the entrypoint and run command:
+To run the game with [gamescope](https://github.com/ValveSoftware/gamescope), you can use the following command to configure the entrypoint and run command:
 
 ```bash
-konaste infinitas configure --entrypoint game --run-command "gamescope -f -r 120 --mangoapp -- umu-run %c"
+konaste infinitas configure --entrypoint game --run-command "gamescope --rt -f -r 120 --filter linear --mangoapp -- umu-run %c"
 ```
 
-To revert this configuration, you can run:
+> [!NOTE]
+> This configuration runs smoothly on my system without any stuttering or tearing.
+
+To revert this configuration when update is required, you can run:
 
 ```bash
 konaste infinitas configure --entrypoint launcher --run-command "umu-run %c"
@@ -150,12 +173,122 @@ konaste infinitas configure --entrypoint launcher --run-command "umu-run %c"
 > [!NOTE]
 > If `--entrypoint launcher` with gamescope is used, the launcher will run in gamescope but the game itself will not.
 
+### Low latency audio setup
+
+- Use [PipeWire](https://www.google.com/search?client=firefox-b-d&q=pipewire) as the audio server for low latency audio with flexible routing and compatibility.
+
+Configure linux side audio settings for low latency audio:
+
+`~/.config/pipewire/pipewire.conf.d/90-low-latency.conf`:
+```
+context.properties = {
+  default.clock.rate = 48000
+
+  # INFINITAS requires 44100Hz, allow both rates.
+  # If possible, switch the entire graph to 44.1 kHz to suppress resampling.
+  default.clock.allowed-rates = [ 44100, 48000 ]
+
+  # Reducing it lowers latency, but increases CPU load and makes the audio more prone to dropouts.
+  default.clock.quantum = 32
+  default.clock.min-quantum = 32
+  # Set it to twice the minimum.
+  default.clock.max-quantum = 64
+  default.clock.quantum-limit = 64
+}
+
+context.modules = [
+  {
+    name = libpipewire-module-rt
+    args = {
+      nice.level = -20
+      rt.prio = 99
+    }
+  }
+]
+```
+
+Configure a dedicated virtual audio device for games:
+
+`~/.config/pipewire/pipewire.conf.d/90-infinitas.conf`:
+```
+context.modules = [
+  {
+    name = libpipewire-module-loopback
+    args = {
+      node.description = "INFINITAS Loopback"
+      audio.position = [ FL FR ]
+      capture.props = {
+        node.name = "infinitas-sink"
+        media.class = "Audio/Sink"
+        node.description = "INFINITAS Sink"
+        device.description = "INFINITAS Sink"
+        device.class = "sound"
+        device.icon-name = "audio-card"
+        node.virtual = false
+        # IMPORTANT: Set the sample rate to 44100Hz for compatibility with INFINITAS.
+        audio.rate = 44100
+        audio.channels = 2
+      }
+      playback.props = {
+        node.name = "infinitas-output"
+        node.passive = true
+        target.object = "alsa_output.pci-0000_c4_00.6.analog-stereo"
+
+        # stereo to 7.1ch upmixing, unless delete below.
+        stream.dont-remix = true
+        audio.position = [ FL FR RL RR FC LFE SL SR ]
+        channelmix.upmix = true
+        channelmix.upmix-method = "psd"
+        channelmix.lfe-cutoff = 150
+        channelmix.fc-cutoff = 12000
+        channelmix.rear-delay = 12.0
+        channelmix.stereo-widen = 0.1
+      }
+    }
+  }
+]
+```
+
+Apply the configuration by running:
+
+```bash
+systemctl --user restart pipewire pipewire-pulse
+```
+
+Configure the game to use the virtual audio device, run `winecfg` to set the audio output device to `INFINITAS Loopback`.
+
+```bash
+konaste infinitas exec umu-run winecfg
+```
+
+Configure the game side audio buffer size to reduce latency:
+
+```bash
+konaste infinitas configure --env.PULSE_LATENCY_MSEC=60
+```
+
+Lowering the value will reduce latency, but may cause audio dropouts if your system cannot handle it.
+
+#### Refrences
+
+Since I was new to Linux’s audio system, I referred to the following.
+
+- https://www.reddit.com/r/linux_gaming/comments/1gao420/low_latency_guide_for_linux_using_pipewire/
+- https://blog.thepoon.fr/osuLinuxAudioLatency/
+- https://www.benashby.com/resources/pipewire-virtual-devices/
+- https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442
+
 ## Troubleshooting
 
-### Launching the game fails with code
+### Launching the game fails
 
-After clicking the button, do not go back to the previous page. Doing so will
+After clicking the launch button, do not go back to the previous page. Doing so will
 cause the game launch authorization to fail.
+
+### INFIINITAS does not play sound
+
+- You need to set the audio output to `WASAPI (共有モード)` (Shared Mode) in the game settings.
+- You need to provide audio output device that configured sample rate to 44100Hz.
 
 ## Verified Configurations
 
@@ -166,18 +299,37 @@ cause the game launch authorization to fail.
 
 ### beatmania IIDX INFINTAS
 
+All game functionality has been tested on the following configurations:
+
+- Hardware: Minisforum UM790 Pro
+    - CPU: AMD Ryzen 9 7940HS (8C / 4.0 - 5.2 GHz)
+    - GPU: AMD Radeon 780M
+    - RAM: 64 GB
+- Audio: Sennheiser GSX1000 (7.1ch Virtual Surround)
+- Display:
+   - Primary: Hisense 43E7N 4K @120Hz via HDMI
+   - Secondary: Full HD Monitor @60Hz via USB-C
+- Controller: GAMO2 PHOENIXWAN+ LMT x2
 - Proton: GE-Proton10-8 (GE-Proton10-9 is failed to install ie8)
+
+CPU load is around 10% and GPU load is around 70% during gameplay and streaming with OBS Studio.
+There’s no noticeable difference compared to running it on Windows 11 in a dual-boot setup.
+
+### SOUND VOLTEX EXCEED GEAR
+
+:under_construction:
 
 ### GITADORA
 
 All game functionality has been tested on the following configurations:
 
 - Hardware: LENOVO ThinkCentre M715q
-    - CPU: AMD Ryzen 5 PRO 2400GE (8C 3.20 GHz)
+    - CPU: AMD Ryzen 5 PRO 2400GE (4C / 3.2 - 3.8 GHz)
     - GPU: AMD Radeon Vega 11 Graphics
     - RAM: 8 GB
+- Audio: Onboard
 - Proton: GE-Proton10-8
-- MIDI Drum: Roland TD-1 (USB)
+- MIDI Drums: Roland TD-1 (USB)
 
 ## Development
 
@@ -205,6 +357,7 @@ execution path. You must specify the `--self-path` option when running the
 
 - Graphics API: Direct3D 9
 - Audio API: WASAPI (Shared Mode, Exclusive Mode), ASIO (Hidden feature)
+  - Requires 44100Hz sample rate
 - Native resolution: 1920x1080
 - Maximum frame rate: 120 fps
 
