@@ -35,7 +35,9 @@ export function configPath(game: Game) {
   return `${xdg.config()}/konaste/${game}.json`;
 }
 
-export async function tryReadConfig(game: Game): Promise<GameConfig | undefined> {
+export async function tryReadConfig(
+  game: Game,
+): Promise<GameConfig | undefined> {
   try {
     return await readConfig(game);
   } catch (_err) {
@@ -46,9 +48,9 @@ export async function tryReadConfig(game: Game): Promise<GameConfig | undefined>
 export async function readConfig(game: Game): Promise<GameConfig> {
   const path = $.path(configPath(game));
   if (!await path.exists()) {
-        throw new Error(
-          `Configuration not found. Please run '${game} configure' first.`,
-        );
+    throw new Error(
+      `Configuration not found. Please run '${game} configure' first.`,
+    );
   }
-    return await path.readJson();
+  return await path.readJson();
 }

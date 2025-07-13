@@ -1,7 +1,5 @@
 import { gameCommand } from "../command.ts";
-import {
-  GameDefinition,
-} from "../utils.ts";
+import { GameDefinition } from "../utils.ts";
 
 const def: GameDefinition = {
   id: "gitadora",
@@ -16,7 +14,7 @@ const def: GameDefinition = {
 export const gitadoraCommand = gameCommand(def, {
   runAction: async (umu$, config, url) => {
     if (config.entrypoint === "launcher") {
-    const exe = `C:\\Games\\GITADORA\\launcher\\modules\\launcher.exe`;
+      const exe = `C:\\Games\\GITADORA\\launcher\\modules\\launcher.exe`;
       await umu$`systemd-cat -t ${def.id} umu-run ${exe} ${url}`;
     } else if (config.entrypoint === "game") {
       const parsed = new URL(url);

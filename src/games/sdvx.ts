@@ -1,7 +1,5 @@
 import { gameCommand } from "../command.ts";
-import {
-  GameDefinition,
-} from "../utils.ts";
+import { GameDefinition } from "../utils.ts";
 
 const def: GameDefinition = {
   id: "sdvx",
@@ -17,7 +15,7 @@ export const sdvxCommand = gameCommand(def, {
   runAction: async (umu$, config, url) => {
     if (config.entrypoint === "launcher") {
       const exe =
-      `C:\\Games\\SOUND VOLTEX EXCEED GEAR\\launcher\\modules\\launcher.exe`;
+        `C:\\Games\\SOUND VOLTEX EXCEED GEAR\\launcher\\modules\\launcher.exe`;
       await umu$`systemd-cat -t ${def.id} umu-run ${exe} ${url}`;
     } else if (config.entrypoint === "game") {
       const parsed = new URL(url);

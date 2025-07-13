@@ -1,7 +1,5 @@
 import { gameCommand } from "../command.ts";
-import {
-  GameDefinition,
-} from "../utils.ts";
+import { GameDefinition } from "../utils.ts";
 
 const def: GameDefinition = {
   id: "infinitas",
