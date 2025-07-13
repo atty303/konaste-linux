@@ -34,6 +34,8 @@ Linux desktop environments and provides support for configuring Wine.
   - systemd-cat, update-desktop-database, xdg-mime, xdg-open
 - [umu-launcher](https://github.com/Open-Wine-Components/umu-launcher)
 
+On [Bazzite](https://bazzite.gg/), it works with just the steps in this README.
+
 ## Installation
 
 Download the latest release from the
