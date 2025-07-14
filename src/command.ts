@@ -21,7 +21,7 @@ function configureCommand(def: GameDefinition) {
     .option("--game-id <id:string>", "Game ID")
     .option("-e, --entrypoint <type:entrypoint>", "Entrypoint to use on run")
     .option("--run-command <command:string>", "Command to run the game")
-    .option("--env.* <value:string>", "Environment variable")
+    .option("--env.* [value:string]", "Environment variable")
     .action(async (options) => {
       const defaultConfig = {
         umuRun: "umu-run",
@@ -32,18 +32,24 @@ function configureCommand(def: GameDefinition) {
           GAMEID: `umu-${def.id}`,
         },
       };
-      const config0 = await tryReadConfig(def.id) ?? defaultConfig;
+      const config0 = {
+        ...defaultConfig,
+        ...(await tryReadConfig(def.id) ?? {}),
+      };
       const config = {
         umuRun: options.umuRun ?? config0.umuRun,
         entrypoint: options.entrypoint ?? config0.entrypoint,
         runCommand: options.runCommand ?? config0.runCommand,
         env: {
           ...config0.env,
-          WINEPREFIX: options.winePrefix ?? config0.env.WINEPREFIX,
-          GAMEID: options.gameId ?? config0.env.GAMEID,
+          WINEPREFIX: options.env?.WINEPREFIX ?? config0.env.WINEPREFIX,
+          GAMEID: options.env?.GAMEID ?? config0.env.GAMEID,
           ...options.env,
-        },
+        } as Record<string, string>,
       };
+      for (const [key, _] of Object.entries(options.env ?? {}).filter(([_, value]) => value === true)) {
+        delete config.env[key];
+      }
       const path = $.path(configPath(def.id));
       await path.parent()?.ensureDir();
       await path.writeJsonPretty(config);
@@ -112,7 +118,7 @@ function execCommand(def: GameDefinition) {
     .action(async (_, ...command) => {
       const config = await readConfig(def.id);
       const umu$ = buildUmu$(config);
-      await umu$.raw`${command.join(" ")}`;
+      await umu$.raw`${command.join(" ")}`.printCommand();
     });
 }
 
