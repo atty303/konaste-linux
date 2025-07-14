@@ -132,22 +132,18 @@ function runCommand(
 ) {
   return new Command()
     .description(
-      "Run the game from browser\nThis command is used by URL scheme handlers. You should not run it directly.",
+      "Open the login page in a browser if url is not provided, otherwise run the game with the given URL",
     )
-    .arguments("<url:string>")
+    .arguments("[url:string]")
     .action(async (_, url) => {
       const config = await readConfig(def.id);
       const umu$ = buildUmu$(config);
-      $.logStep(`Launching ${def.id} with URL: ${url}`);
-      await runAction(umu$, config, url);
-    });
-}
-
-function loginCommand(def: GameDefinition) {
-  return new Command()
-    .description("Open the login page in a browser")
-    .action(async () => {
-      await $`xdg-open ${def.loginUrl}`;
+      if (!url) {
+        await $`xdg-open ${def.loginUrl}`;
+      } else {
+        $.logStep(`Launching ${def.id} with URL: ${url}`);
+       await runAction(umu$, config, url);
+      }
     });
 }
 
@@ -179,6 +175,5 @@ export function gameCommand(def: GameDefinition, opts: {
     .command("associate", associateCommand(def))
     .command("exec", execCommand(def))
     .command("run", runCommand(def, opts.runAction))
-    .command("login", loginCommand(def))
     .command("info", infoCommand(def));
 }
