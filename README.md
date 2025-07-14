@@ -57,6 +57,9 @@ ubi install -p atty303/konaste-linux -e konaste -i ~/.local/bin
 
 ### beatmania IIDX INFINTAS
 
+<details>
+<summary>Click to expand the steps</summary>
+
 1. Run the following command to configure the wine prefix:
 
 ```bash
@@ -83,7 +86,7 @@ konaste infinitas associate
 5. Run the following command to open the login page in your browser:
 
 ```bash
-konaste infinitas login
+konaste infinitas run
 ```
 
 6. After logging in, click the `ゲーム起動` button to launch the game launcher.
@@ -95,17 +98,68 @@ konaste infinitas login
 > Wine does not support WASAPI Exclusive Mode on `winepulse.drv`(PulseAudio), so
 > you must use Shared Mode.
 
+</details>
+
+### SOUND VOLTEX EXCEED GEAR
+
+<details>
+<summary>Click to expand the steps</summary>
+
+1. Run the following command to configure the wine prefix:
+
+```bash
+konaste sdvx configure --env.PROTONPATH=GE-Proton
+konaste sdvx create
+```
+
+2. Download the installer from the
+   [official website](https://p.eagate.573.jp/game/eacsdvx/vi/download/index.html)
+   (you need to log in to your account).
+
+3. Run the following command to install it:
+
+```bash
+konaste sdvx exec WINEDLLOVERRIDES="ieframe=d" umu-run msiexec /i ~/Downloads/sdvx_installer_2022011800.msi
+```
+
+4. Run the following command to associate the URL scheme with the game:
+
+```bash
+konaste sdvx associate
+```
+
+5. Run the following command to open the login page in your browser:
+
+```bash
+konaste infinitas run
+```
+
+<img width="502" height="495" alt="Screen Shot 2025-07-14 at 16 01 02" src="https://github.com/user-attachments/assets/2eaab921-bb50-49bc-99c8-e1418125662e" />
+
+</details>
+
 ### GITADORA
 
 **This guide is outdated. Need to be updated.**
 
-1. Download the installer from the
-   [official website](https://p.eagate.573.jp/game/eacgitadora/konagt/download/installer.html)
-   (you need to log in to your account).
-2. Run the following command to install it:
+<details>
+<summary>Click to expand the steps</summary>
+
+1. Run the following command to configure the wine prefix:
 
 ```bash
-konaste gitadora install ~/Downloads/GITRADORA_installer.msi
+konaste sdvx configure --env.PROTONPATH=GE-Proton
+konaste sdvx create
+```
+
+2. Download the installer from the
+   [official website](https://p.eagate.573.jp/game/eacgitadora/konagt/download/installer.html)
+   (you need to log in to your account).
+
+3. Run the following command to install it:
+
+```bash
+konaste gitadora exec WINEDLLOVERRIDES="ieframe=d" umu-run msiexec /i ~/Downloads/GITRADORA_installer.msi
 ```
 
 - Select the default options during installation.
@@ -119,6 +173,8 @@ konaste gitadora login
 ```
 
 4. After logging in, click the `ゲーム起動` button to launch the game.
+
+</details>
 
 ## Usage
 
@@ -405,3 +461,8 @@ execution path. You must specify the `--self-path` option when running the
 - Audio API: WASAPI (Shared Mode, Exclusive Mode)
 - Native resolution: 1920x1080
 - Maximum frame rate: 60 fps
+
+## References
+
+- [mizztgc/konaste-linux](https://github.com/mizztgc/konaste-linux) - Another
+  work for konaste games on Linux that uses bash scripts and doesn't use Proton.
