@@ -6,14 +6,13 @@ pkl = "latest"
 [tasks.build]
 description = "Build the CLI binary"
 run = [
-    "deno compile -A --target $ARCH -o dist/konaste-$ARCH src/main.ts",
+    "deno compile -A --target {{option(name='arch', default='x86_64-unknown-linux-gnu')}} -o dist/konaste-{{option(name='arch', default='x86_64-unknown-linux-gnu')}} src/main.ts",
 ]
-env.ARCH = "{{arg(name='arch', i=1, default='x86_64-unknown-linux-gnu')}}"
 
 [tasks.prepare-release]
 description = "Prepare for release"
 run = [
-    "echo '\"{{option(name='version') }}\"' > version.txt",
-    "mise build --arch x86_64-unknown-linux-gnu",
-    "mise build --arch aarch64-unknown-linux-gnu",
+    "echo '\"{{option(name='version') }}\"' > version.json",
+    "mise build --arch=x86_64-unknown-linux-gnu",
+    "mise build --arch=aarch64-unknown-linux-gnu",
 ]
