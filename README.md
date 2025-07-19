@@ -292,10 +292,13 @@ To revert this configuration when game update is required, you can run:
 konaste infinitas profile launcher --default
 ```
 
-### Setup Low latency audio with PipeWire
+### Setup low latency audio with PipeWire
 
 Use [PipeWire](https://pipewire.org/) as the audio server for low latency audio
 with flexible routing and maximum compatibility.
+
+<details>
+<summary>Click to expand the setup steps</summary>
 
 Configure linux side audio settings for low latency audio:
 
@@ -381,7 +384,7 @@ konaste infinitas config --env.PULSE_LATENCY_MSEC=60
 Lowering the value will reduce latency, but may cause audio dropouts if your
 system cannot handle it.
 
-#### Refrences
+#### References
 
 Since I was new to Linux’s audio system, I referred to the following.
 
@@ -389,6 +392,8 @@ Since I was new to Linux’s audio system, I referred to the following.
 - https://blog.thepoon.fr/osuLinuxAudioLatency/
 - https://www.benashby.com/resources/pipewire-setup-fundamentals/
 - https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442
+
+</details>
 
 ### Use ASIO in INFINITAS
 
