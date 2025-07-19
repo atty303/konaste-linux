@@ -8,10 +8,10 @@ import * as reg from "./winereg.ts";
 import { readRegistryFile } from "./winereg.ts";
 import { GameDefinition } from "./games.ts";
 
-function configureCommand(def: GameDefinition) {
+function setCommand(def: GameDefinition) {
   return new Command()
-    .description("Alter the configuration for game")
-    .option("--env.* [value:string]", "Environment variable")
+    .description("Set configuration for the game")
+    .option("--env.* [value:string]", "Set environment variable (empty value to unset)")
     .option("--run-profile [name:string]", "Run profile to use")
     .action(async (options) => {
       const defaultConfig = {
@@ -44,6 +44,15 @@ function configureCommand(def: GameDefinition) {
 
       $.logStep(`Configuration for ${def.id} saved`);
       $.log(JSON.stringify(config, null, 2));
+    });
+}
+
+function showCommand(def: GameDefinition) {
+  return new Command()
+    .description("Show current configuration for the game")
+    .action(async () => {
+      const config = await readConfig(def.id);
+      console.log(JSON.stringify(config, null, 2));
     });
 }
 
@@ -95,7 +104,7 @@ async function extractIcon(
 
 function associateCommand(def: GameDefinition) {
   return new Command()
-    .description("Associate the URL scheme with the game")
+    .description(`Associate the URL scheme "${def.urlScheme}://" with the game`)
     .option("--self-path <path:file>", "Path to the this executable")
     .action(async (options) => {
       // If run as a Deno script, require the --self-path option
@@ -159,7 +168,7 @@ ${iconName ? `Icon=${iconName}` : ""}`;
 
 function execCommand(def: GameDefinition) {
   return new Command()
-    .description("Run a command in the game wine prefix")
+    .description("Run a command in same environment as the `run` subcommand")
     .arguments("<...command:string>")
     .action(async (_, ...command) => {
       const config = await readConfig(def.id);
@@ -247,7 +256,8 @@ function runCommand(def: GameDefinition) {
 export function gameCommand(def: GameDefinition) {
   return new Command()
     .description(`Commands for ${def.name}`)
-    .command("configure", configureCommand(def))
+    .command("set", setCommand(def))
+    .command("show", showCommand(def))
     .command("associate", associateCommand(def))
     .command("exec", execCommand(def))
     .command("run", runCommand(def));

@@ -1,3 +1,4 @@
+import { colors } from "@cliffy/ansi/colors";
 import { Command } from "@cliffy/command";
 import { CompletionsCommand } from "@cliffy/command/completions";
 import { UpgradeCommand } from "@cliffy/command/upgrade";
@@ -40,7 +41,18 @@ const cmd = new Command()
         new GithubProvider({ repository: "atty303/konaste-linux" }),
       ],
     }),
-  );
+)
+  .command("ls", "List available games")
+  .option("--json", "Output in JSON format")
+  .action((options) => {
+    if (options.json) {
+      console.log(JSON.stringify(games, null, 2));
+      Deno.exit(0);
+    }
+    for (const game of games) {
+      $.log(`${colors.green.bold(game.id)} ${colors.gray(`(URL: ${game.urlScheme})`)}: ${game.name} - ${colors.blue.underline(game.loginUrl)}`);
+    }
+  })
 
 games.forEach((game) => {
   cmd.command(game.id, gameCommand(game));
