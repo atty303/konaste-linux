@@ -5,7 +5,7 @@ import { UpgradeCommand } from "@cliffy/command/upgrade";
 import { GithubProvider } from "@cliffy/command/upgrade/provider/github";
 import { defaultGames, GameDefinition } from "./games.ts";
 import { gameCommand } from "./command.ts";
-import { configDir } from "./utils.ts";
+import { configDir } from "./config.ts";
 import $ from "@david/dax";
 import * as path from "jsr:@std/path";
 

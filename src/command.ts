@@ -1,36 +1,41 @@
 import * as path from "jsr:@std/path";
 import * as pathWin from "jsr:@std/path/windows";
 import xdg from "@404wolf/xdg-portable";
+import { colors } from "@cliffy/ansi/colors";
 import { Command, ValidationError } from "@cliffy/command";
-import { GameConfig, readConfig, tryReadConfig, writeConfig } from "./utils.ts";
+import { GameConfig, readConfig, tryReadConfig, writeConfig } from "./config.ts";
 import $ from "@david/dax";
 import * as reg from "./winereg.ts";
 import { readRegistryFile } from "./winereg.ts";
 import { GameDefinition } from "./games.ts";
 
-function setCommand(def: GameDefinition) {
+function configCommand(def: GameDefinition) {
   return new Command()
     .description("Set configuration for the game")
     .option("--env.* [value:string]", "Set environment variable (empty value to unset)")
     .option("--run-profile [name:string]", "Run profile to use")
-    .action(async (options) => {
+    .example("Show current configuration", "konaste game config")
+    .example("Set environment variables", "konaste game config --env WINEPREFIX=/path/to/prefix")
+   .action(async (options) => {
       const defaultConfig = {
         env: {
           WINEPREFIX: path.join(xdg.state(), "konaste", def.id),
           GAMEID: `umu-${def.id}`,
         },
-        runProfile: "launcher",
+        profiles: def.profiles,
+        runProfile: undefined,
       };
       const config0 = {
         ...defaultConfig,
         ...(await tryReadConfig(def.id) ?? {}),
       };
-      const config = {
+     const config = {
+        ...config0,
         env: {
           ...config0.env,
           ...options.env,
         } as Record<string, string>,
-        runProfile: config0.runProfile ?? options.runProfile,
+        runProfile: config0.runProfile ?? (options.runProfile === true ? undefined : options.runProfile),
       };
       for (
         const [key, _] of Object.entries(options.env ?? {}).filter((
@@ -40,19 +45,58 @@ function setCommand(def: GameDefinition) {
         delete config.env[key];
       }
 
-      await writeConfig(def.id, config);
+     $.log(JSON.stringify(config, null, 2));
+     if (Object.keys(options).length === 0) {
+       Deno.exit(0);
+      }
 
+     await writeConfig(def.id, config);
       $.logStep(`Configuration for ${def.id} saved`);
-      $.log(JSON.stringify(config, null, 2));
     });
 }
 
-function showCommand(def: GameDefinition) {
+function profileCommand(def: GameDefinition) {
   return new Command()
-    .description("Show current configuration for the game")
-    .action(async () => {
+    .description(`Manage launch profiles for the game
+
+command string supports the following placeholders:
+  %u: URL passed to the game
+  %t: Token from the URL
+  %r: Installation directory as windows format (e.g. C:\\Games)
+  %{id}: Game ID (e.g. 'infinitas', 'sdvx', etc.)
+    `)
+    .option("--default", "Set this profile as the default")
+    .option("--command <command:string>", `Set the launch command for the profile`)
+    .option("--delete", "Delete the profile")
+    .arguments("[name:string]")
+    .example("List all profiles", "konaste game profile")
+    .example("Unset the default profile", "konaste game profile --default")
+    .action(async (options, name) => {
       const config = await readConfig(def.id);
-      console.log(JSON.stringify(config, null, 2));
+
+      if (Object.keys(options).length === 0) {
+        $.log("Available profiles:");
+        for (const [name, profile] of Object.entries(def.profiles)) {
+          const isDefault = config.runProfile === name;
+          $.log(
+            `${isDefault ? `$${colors.green(name)} (default)` : colors.yellow(name)}: ${profile.command}`,
+          );
+        }
+        return;
+      }
+
+      if (options.delete && name) {
+        delete config.profiles[name];
+      } else if (options.command && name) {
+        config.profiles[name].command = options.command;
+      }
+
+      if (options.default) {
+        config.runProfile = name;
+      }
+
+      await writeConfig(def.id, config);
+      $.logStep(`Configuration for ${def.id} saved`);
     });
 }
 
@@ -176,14 +220,6 @@ function execCommand(def: GameDefinition) {
     });
 }
 
-function profileCommand(def: GameDefinition) {
-  return new Command()
-    .description("Manage launch profiles for the game")
-    .action(async () => {
-      const config = await readConfig(def.id);
-    });
-}
-
 function runCommand(def: GameDefinition) {
   return new Command()
     .description(
@@ -220,11 +256,32 @@ function runCommand(def: GameDefinition) {
           throw new Error("No token found in URL");
         }
 
-        const selectedProfile = config.runProfile || "launcher";
-        const profile = def.runProfiles.find((p) => p.name === selectedProfile);
+        const selectedProfileName = await (async () => {
+          if (config.runProfile) {
+            return config.runProfile;
+          } else if (Object.keys(config.profiles).length === 1) {
+            return Object.keys(config.profiles)[0];
+          } else {
+            const profileNames = Object.keys(config.profiles);
+            if (profileNames.length === 0) {
+              throw new Error("No profiles available for this game");
+            } else {
+              const actions = profileNames.map((name) => ($.escapeArg(`${name}=${name}`)));
+              const selected = await $`notify-send --app-name ${def.id} --urgency=normal --icon=${def.id} ${$.rawArg(actions)}`.noThrow().text();
+              return selected in profileNames
+                ? selected
+                : undefined;
+            }
+          }
+        })();
+        if (!selectedProfileName) {
+          throw new Error("No profile selected");
+        }
+
+        const profile = config.profiles[selectedProfileName];
         if (!profile) {
           throw new Error(
-            `Run profile '${selectedProfile}' not found for ${def.id}`,
+            `Run profile '${selectedProfileName}' not found for ${def.id}`,
           );
         }
 
@@ -256,8 +313,8 @@ function runCommand(def: GameDefinition) {
 export function gameCommand(def: GameDefinition) {
   return new Command()
     .description(`Commands for ${def.name}`)
-    .command("set", setCommand(def))
-    .command("show", showCommand(def))
+    .command("config", configCommand(def))
+    .command("profile", profileCommand(def))
     .command("associate", associateCommand(def))
     .command("exec", execCommand(def))
     .command("run", runCommand(def));

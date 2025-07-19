@@ -1,5 +1,4 @@
-type RunProfile = {
-  name: string;
+export type GameProfile = {
   command: string;
 };
 
@@ -10,7 +9,7 @@ export type GameDefinition = {
   urlScheme: string;
   loginUrl: string;
   registryKey: string;
-  runProfiles: RunProfile[];
+  profiles: Record<string, GameProfile>;
 };
 
 export const defaultGames: GameDefinition[] = [
@@ -21,18 +20,16 @@ export const defaultGames: GameDefinition[] = [
     urlScheme: "bm2dxinf",
     loginUrl: "https://p.eagate.573.jp/game/infinitas/2/api/login/login.html",
     registryKey: "Software\\KONAMI\\beatmania IIDX INFINITAS",
-    runProfiles: [
-      {
-        name: "launcher",
-        command:
-          'systemd-cat -t %{id} umu-run "%r\\launcher\\modules\\bm2dx_launcher.exe" %u',
-      },
-      {
-        name: "game",
-        command:
-          'systemd-cat -t %{id} umu-run "%r\\game\\app\\bm2dx.exe" -t %t',
-      },
-    ],
+        profiles: {
+            launcher: {
+                command:
+                    'systemd-cat -t %{id} umu-run "%r\\launcher\\modules\\bm2dx_launcher.exe" %u',
+            },
+            game: {
+                command:
+                    'systemd-cat -t %{id} umu-run "%r\\game\\app\\bm2dx.exe" -t %t',
+            },
+        },
   },
   // /drive_c/users/steamuser/Desktop/beatmania IIDX INFINITAS.url
   {
@@ -43,18 +40,16 @@ export const defaultGames: GameDefinition[] = [
     loginUrl:
       "http://eagate.573.jp/game/konasteapp/API/login/login.html?game_id=sdvx",
     registryKey: "Software\\KONAMI\\SOUND VOLTEX EXCEED GEAR",
-    runProfiles: [
-      {
-        name: "launcher",
+    profiles: {
+      launcher: {
         command:
           'systemd-cat -t %{id} umu-run "%r\\launcher\\modules\\launcher.exe" %u',
       },
-      {
-        name: "game",
+      game: {
         command:
           'systemd-cat -t %{id} umu-run "%r\\game\\modules\\sv6c.exe" -t %t',
       },
-    ],
+    },
   },
   {
     id: "gitadora",
@@ -64,12 +59,11 @@ export const defaultGames: GameDefinition[] = [
     loginUrl:
       "http://eagate.573.jp/game/konasteapp/API/login/login.html?game_id=gitadora",
     registryKey: "Software\\KONAMI\\GITADORA",
-    runProfiles: [
-      {
-        name: "launcher",
+    profiles: {
+      launcher: {
         command:
           'systemd-cat -t %{id} umu-run "%r\\launcher\\modules\\launcher.exe" %u',
       },
-    ],
+    },
   },
 ];

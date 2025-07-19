@@ -1,23 +1,21 @@
 import * as path from "jsr:@std/path";
 import xdg from "@404wolf/xdg-portable";
 import $ from "@david/dax";
-
-export type Game = string;
+import { GameProfile } from "./games.ts";
 
 export type GameConfig = {
   env: Record<string, string>;
+  profiles: Record<string, GameProfile>;
   runProfile: string | undefined;
 };
 
 export const configDir = path.join(xdg.config(), "konaste");
 
-function configPath(game: Game) {
+function configPath(game: string) {
   return path.join(configDir, `${game}.json`);
 }
 
-export async function tryReadConfig(
-  game: Game,
-): Promise<GameConfig | undefined> {
+export async function tryReadConfig(game: string): Promise<GameConfig | undefined> {
   try {
     return await readConfig(game);
   } catch (_err) {
@@ -25,7 +23,7 @@ export async function tryReadConfig(
   }
 }
 
-export async function readConfig(game: Game): Promise<GameConfig> {
+export async function readConfig(game: string): Promise<GameConfig> {
   const path = $.path(configPath(game));
   if (!await path.exists()) {
     throw new Error(
@@ -36,7 +34,7 @@ export async function readConfig(game: Game): Promise<GameConfig> {
 }
 
 export async function writeConfig(
-  gameId: Game,
+  gameId: string,
   config: GameConfig,
 ): Promise<void> {
   const path = $.path(configPath(gameId));
