@@ -282,10 +282,6 @@ you can use the following command to configure the profile:
 konaste infinitas profile gamescope --command "gamescope -f -r 120 -w 1920 -h 1080 --mangoapp -- umu-run %r\\game\\app\\bm2dx.exe -t %t" --default
 ```
 
-> [!NOTE]
-> This configuration runs smoothly on my system without any stuttering or
-> tearing.
-
 To revert this configuration when game update is required, you can run:
 
 ```bash
