@@ -21,7 +21,6 @@ function configCommand(def: GameDefinition) {
       "--env.* [value:string]",
       "Set environment variable (empty value to unset)",
     )
-    .option("--run-profile [name:string]", "Run profile to use")
     .example("Show current configuration", "konaste game config")
     .example(
       "Set environment variables",
@@ -34,7 +33,7 @@ function configCommand(def: GameDefinition) {
           GAMEID: `umu-${def.id}`,
         },
         profiles: def.profiles,
-        runProfile: undefined,
+        runProfile: def.runProfile,
       };
       const config0 = {
         ...defaultConfig,
@@ -46,8 +45,7 @@ function configCommand(def: GameDefinition) {
           ...config0.env,
           ...options.env,
         } as Record<string, string>,
-        runProfile: config0.runProfile ??
-          (options.runProfile === true ? undefined : options.runProfile),
+        runProfile: config0.runProfile ?? def.runProfile,
       };
       for (
         const [key, _] of Object.entries(options.env ?? {}).filter((
@@ -104,7 +102,9 @@ command string supports the following placeholders:
         const isDefault = config.runProfile === name;
         $.log(
           `${
-            isDefault ? `$${colors.green(name)} (default)` : colors.yellow(name)
+            isDefault
+              ? colors.red.bold(`${name} (default)`)
+              : colors.yellow(name)
           }: ${profile.command}`,
         );
       }

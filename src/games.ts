@@ -10,6 +10,7 @@ export type GameDefinition = {
   loginUrl: string;
   registryKey: string;
   profiles: Record<string, GameProfile>;
+  runProfile: string;
 };
 
 export const defaultGames: GameDefinition[] = [
@@ -29,6 +30,7 @@ export const defaultGames: GameDefinition[] = [
         command: "systemd-cat -t %{id} umu-run %r\\game\\app\\bm2dx.exe -t %t",
       },
     },
+    runProfile: "launcher",
   },
   // /drive_c/users/steamuser/Desktop/beatmania IIDX INFINITAS.url
   {
@@ -49,6 +51,7 @@ export const defaultGames: GameDefinition[] = [
           "systemd-cat -t %{id} umu-run %r\\game\\modules\\sv6c.exe -t %t",
       },
     },
+    runProfile: "launcher",
   },
   {
     id: "gitadora",
@@ -64,5 +67,7 @@ export const defaultGames: GameDefinition[] = [
           "systemd-cat -t %{id} umu-run %r\\launcher\\modules\\launcher.exe %u",
       },
     },
+
+    runProfile: "launcher",
   },
 ];

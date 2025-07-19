@@ -33,7 +33,7 @@ Linux desktop environments and provides support for configuring Wine.
 ## Prerequisites
 
 - Modern Linux distribution with a desktop environment
-  - systemd-cat, update-desktop-database, xdg-mime, xdg-open
+  - Required: systemd-cat, desktop-file-install, xdg-open
 - [umu-launcher](https://github.com/Open-Wine-Components/umu-launcher) and it's
   dependencies
   - I recommend using Proton via umu‑launcher. Since Proton containerizes all
@@ -42,6 +42,7 @@ Linux desktop environments and provides support for configuring Wine.
 - Recommended using
   [atty303/proton-ge-custom](https://github.com/atty303/proton-ge-custom) to fix
   audio delay issues
+- If ImageMagick is installed, use it to generate icons for the games.
 
 I’m using [Bazzite](https://bazzite.gg/), and the minimal setup in this guide
 works out of the box without any extra system settings.
@@ -83,7 +84,7 @@ To persist the sink, you can configure PipeWire configuration.
 1. Run the following command to configure and create the wine prefix:
 
 ```bash
-konaste infinitas configure --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
+konaste infinitas config --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
 konaste infinitas exec umu-run wineboot --init
 ```
 
@@ -130,7 +131,7 @@ konaste infinitas run
 1. Run the following command to configure and create the wine prefix:
 
 ```bash
-konaste sdvx configure --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
+konaste sdvx config --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
 konaste sdvx exec umu-run wineboot --init
 ```
 
@@ -168,7 +169,7 @@ konaste sdvx run
 1. Run the following command to configure the wine prefix:
 
 ```bash
-konaste gitadora configure --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
+konaste gitadora config --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
 konaste gitadora exec umu-run wineboot --init
 ```
 
@@ -199,25 +200,35 @@ konaste gitadora run
 
 ## Usage
 
-### `konaste <game> configure`
+You can explore the available commands by specifying the `--help` option.
 
-This command configures the environment for the specified game.
+### `konaste ls`
 
-- `konaste infinitas configure --env.NAME=<value>`: Sets the environment
-  variable `NAME` to `value`. Use this to set umu-launcher, Proton or Wine
-  environment variables.
-- `konaste infinitas configure --entrypoint launcher`: Runs the game launcher
-  when the game is launched.
-- `konaste infinitas configure --entrypoint game`: Runs the game directly when
-  the game is launched.
-- `konaste infinitas configure --run-command <command>`: Specifies the command
-  to run the game. `%c` in command will be replaced with the actual windows
-  command.
+This command lists the available games that can be managed by this tool.
 
-### `konaste <game> create`
+### `konaste <game> config`
 
-This command creates a Wine prefix for the specified game. You must configure
-the prefix with the `configure` command before running this command.
+This command configures the environment for the specified game. If user
+configuration is not initialized, it will create with the default configuration.
+
+- `konaste infinitas config`: Shows the current configuration for the game.
+- `konaste infinitas config --env.NAME=<value>`: Sets the environment variable
+  `NAME` to `value`. Use this to set umu-launcher, Proton or Wine environment
+  variables.
+
+### `konaste <game> profile`
+
+This command manages the profiles for the specified game. Profiles are used to
+configure the command to run the game when launching from browser. Some default
+game definitions have preconfigured profiles for running the game directly
+without launcher.
+
+- `konaste infinitas profile`: Lists the available profiles for the game.
+- `konaste infinitas profile --default`: Unsets the default profile. If no
+  profile is set as default, selection will be prompted when launching.
+- `konaste infinitas profile <name> --command <command>`: Creates or updates a
+  profile with the specified name and command.
+- `konaste infinitas profile <name> --delete`: Deletes the specified profile.
 
 ### `konaste <game> associate`
 
@@ -239,7 +250,7 @@ This command opens the login URL in your default web browser if no URL is
 provided.
 
 And this is executed by the URL scheme registered by the `associate` command. It
-runs the game in GUI session, so logs are output to the systemd journal.
+will execute the command specified in the selected profile.
 
 ## Tweaks for better performance
 
@@ -251,7 +262,7 @@ Linux kernel 6.14 or newer, and becomes available when /dev/ntsync exists.
 To enable ntsync, run the following command:
 
 ```bash
-konaste infinitas configure --env.PROTON_USE_NTSYNC=1
+konaste infinitas config --env.PROTON_USE_NTSYNC=1
 ```
 
 ### Use gamescope
@@ -260,7 +271,7 @@ To run the game with [gamescope](https://github.com/ValveSoftware/gamescope),
 you can use the following command to configure the entrypoint and run command:
 
 ```bash
-konaste infinitas configure --entrypoint game --run-command "gamescope -f -r 120 --mangoapp -- umu-run %c"
+konaste infinitas config --entrypoint game --run-command "gamescope -f -r 120 --mangoapp -- umu-run %c"
 ```
 
 > [!NOTE]
@@ -270,7 +281,7 @@ konaste infinitas configure --entrypoint game --run-command "gamescope -f -r 120
 To revert this configuration when game update is required, you can run:
 
 ```bash
-konaste infinitas configure --entrypoint launcher --run-command "umu-run %c"
+konaste infinitas config --entrypoint launcher --run-command "umu-run %c"
 ```
 
 > [!NOTE]
@@ -361,7 +372,7 @@ systemctl --user restart pipewire pipewire-pulse
 Configure the game side audio buffer size to reduce latency:
 
 ```bash
-konaste infinitas configure --env.PULSE_LATENCY_MSEC=60
+konaste infinitas config --env.PULSE_LATENCY_MSEC=60
 ```
 
 Lowering the value will reduce latency, but may cause audio dropouts if your
@@ -384,7 +395,7 @@ Maybe Koanste games expect the system to be configured for Japanese locale. If
 you encounter issues, try setting the locale to Japanese:
 
 ```bash
-konaste infinitas configure --env.LANG=ja_JP.UTF-8
+konaste infinitas config --env.LANG=ja_JP.UTF-8
 ```
 
 ### Launching the game fails
