@@ -378,6 +378,15 @@ Since I was new to Linux’s audio system, I referred to the following.
 
 ## Troubleshooting
 
+### Locale issues
+
+Maybe Koanste games expect the system to be configured for Japanese locale. If
+you encounter issues, try setting the locale to Japanese:
+
+```bash
+konaste infinitas configure --env.LANG=ja_JP.UTF-8
+```
+
 ### Launching the game fails
 
 After clicking the launch button, do not go back to the previous page. Doing so
