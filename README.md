@@ -60,7 +60,7 @@ chmod +x ~/.local/bin/konaste
 or install it with [ubi](https://github.com/houseabsolute/ubi).
 
 ```bash
-ubi install -p atty303/konaste-linux -e konaste -i ~/.local/bin
+ubi -p atty303/konaste-linux -e konaste -i ~/.local/bin
 ```
 
 ## Minimal steps to launch the games
