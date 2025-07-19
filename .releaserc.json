@@ -1,0 +1,22 @@
+{
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+        "@semantic-release/exec",
+        {
+            "prepareCmd": "mise prepare-release --version ${nextRelease.version}"
+        }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {
+            "path": "dist/**"
+          }
+        ]
+      }
+    ]
+  ]
+}

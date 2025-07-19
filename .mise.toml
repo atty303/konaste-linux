@@ -6,7 +6,14 @@ pkl = "latest"
 [tasks.build]
 description = "Build the CLI binary"
 run = [
-    "deno install",
     "deno compile -A --target $ARCH -o dist/konaste-$ARCH src/main.ts",
 ]
-env.ARCH = "x86_64-unknown-linux-gnu"
+env.ARCH = "{{arg(name='arch', i=1, default='x86_64-unknown-linux-gnu')}}"
+
+[tasks.prepare-release]
+description = "Prepare for release"
+run = [
+    "echo '\"{{option(name='version') }}\"' > version.txt",
+    "mise build --arch x86_64-unknown-linux-gnu",
+    "mise build --arch aarch64-unknown-linux-gnu",
+]

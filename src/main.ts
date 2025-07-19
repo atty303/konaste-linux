@@ -8,6 +8,7 @@ import { gameCommand } from "./command.ts";
 import { configDir } from "./config.ts";
 import $ from "@david/dax";
 import * as path from "jsr:@std/path";
+import versionJson from "../version.json" with { type: "json" };
 
 const games = [...defaultGames];
 
@@ -29,7 +30,7 @@ try {
 
 const cmd = new Command()
   .name("konaste")
-  .version("main")
+  .version(versionJson)
   .usage("<game> <command> [options]")
   .description("Manage Konaste games")
   .meta("deno", Deno.version.deno)
