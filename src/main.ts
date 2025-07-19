@@ -43,8 +43,10 @@ const cmd = new Command()
       ],
     }).action(() => {
       // Upgrade command is not supported for single binary distribution
-      throw new ValidationError("This command is not supported yet. Please update manually.");
-    })
+      throw new ValidationError(
+        "This command is not supported yet. Please update manually.",
+      );
+    }),
   )
   .command("ls", "List available games")
   .option("--json", "Output in JSON format")
