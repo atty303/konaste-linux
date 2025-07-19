@@ -390,6 +390,14 @@ Since I was new to Linux’s audio system, I referred to the following.
 - https://www.benashby.com/resources/pipewire-setup-fundamentals/
 - https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442
 
+### Use ASIO in INFINITAS
+
+INFINITAS supports ASIO output as a hidden feature. On Windows, follow
+[the guide](https://iidx.org/infinitas_asio). You can enable it by adding the
+`--asio` option to `bm2dx.exe`. Wine can enable ASIO
+via [wineasio](https://github.com/wineasio/wineasio), though I haven’t verified
+whether this actually reduces latency.
+
 ## Troubleshooting
 
 ### Locale issues
@@ -518,7 +526,7 @@ Drummania functionality has been tested on the following configurations:
 ## Game technical details
 
 <details>
-<summary>Click to expand the game technical details that I'm obserbed when developing this tool</summary>
+<summary>Click to expand the game technical details that I'm observiing when developing this tool</summary>
 
 ### beatmania IIDX INFINTAS
 
