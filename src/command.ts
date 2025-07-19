@@ -63,16 +63,6 @@ function configureCommand(def: GameDefinition) {
     });
 }
 
-function createCommand(def: GameDefinition) {
-  return new Command()
-    .description("Create a new wine prefix")
-    .action(async (_options) => {
-      const config = await readConfig(def.id);
-      const umu$ = buildUmu$(config);
-      await umu$`umu-run wineboot --init`;
-    });
-}
-
 function associateCommand(def: GameDefinition) {
   const applicationsPath = `${xdg.data()}/applications`;
 
@@ -175,7 +165,6 @@ export function gameCommand(def: GameDefinition, opts: {
   return new Command()
     .description(`Commands for ${def.name}`)
     .command("configure", configureCommand(def))
-    .command("create", createCommand(def))
     .command("associate", associateCommand(def))
     .command("exec", execCommand(def))
     .command("run", runCommand(def, opts.runAction))

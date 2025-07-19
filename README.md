@@ -84,7 +84,7 @@ To persist the sink, you can configure PipeWire configuration.
 
 ```bash
 konaste infinitas configure --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
-konaste infinitas create
+konaste infinitas exec umu-run wineboot --init
 ```
 
 2. Download the installer from the
@@ -131,7 +131,7 @@ konaste infinitas run
 
 ```bash
 konaste sdvx configure --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
-konaste sdvx create
+konaste sdvx exec umu-run wineboot --init
 ```
 
 2. Download the installer from the
@@ -169,7 +169,7 @@ konaste sdvx run
 
 ```bash
 konaste gitadora configure --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
-konaste gitadora create
+konaste gitadora exec umu-run wineboot --init
 ```
 
 2. Download the installer from the
