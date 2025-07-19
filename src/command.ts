@@ -259,83 +259,87 @@ function runCommand(def: GameDefinition) {
       }
 
       // This command is expected to be run from a desktop entry, so notify the user
-      await $`notify-send --app-name ${cmd.getName()} --urgency=critical --icon=${def.id} "Failed to run" "${error.message}"`
+      await $`notify-send --app-name ${def.name} --urgency=critical --icon=${def.id} "Failed to run ${def.id}" "${error.message}"`
         .noThrow();
 
       throw error;
     })
     .action(async (_, url) => {
-      const config = await readConfig(def.id);
-
       if (!url) {
         await $`xdg-open ${def.loginUrl}`;
-      } else {
-        $.logStep(`Launching ${def.id} with URL: ${url}`);
-
-        // This command is expected to be run from a desktop entry, so notify the user
-        await $`notify-send --app-name ${def.id} --urgency=low --icon=${def.id} --expire-time=5000 "Launching ${def.name}"`
-          .noThrow();
-
-        const parsed = new URL(url);
-        const token = parsed.searchParams.get("tk");
-        if (!token) {
-          throw new Error("No token found in URL");
-        }
-
-        const selectedProfileName = await (async () => {
-          if (config.runProfile) {
-            return config.runProfile;
-          } else if (Object.keys(config.profiles).length === 1) {
-            return Object.keys(config.profiles)[0];
-          } else {
-            const profileNames = Object.keys(config.profiles);
-            if (profileNames.length === 0) {
-              throw new Error("No profiles available for this game");
-            } else {
-              const actions = profileNames.map((
-                name,
-              ) => ($.escapeArg(`${name}=${name}`)));
-              const selected =
-                await $`notify-send --app-name ${def.id} --urgency=normal --icon=${def.id} ${
-                  $.rawArg(actions)
-                }`.noThrow().text();
-              return selected in profileNames ? selected : undefined;
-            }
-          }
-        })();
-        if (!selectedProfileName) {
-          throw new Error("No profile selected");
-        }
-
-        const profile = config.profiles[selectedProfileName];
-        if (!profile) {
-          throw new Error(
-            `Run profile '${selectedProfileName}' not found for ${def.id}`,
-          );
-        }
-
-        const systemReg = await readRegistryFile(
-          path.join(config.env.WINEPREFIX, "system.reg"),
-        );
-        const installDir = reg.findValue(
-          systemReg,
-          def.registryKey,
-          "InstallDir",
-        );
-        $.logLight(`Install directory: ${installDir?.data}`);
-
-        const command = profile.command
-          .replace("%u", url)
-          .replace("%t", token)
-          .replace("%r", installDir?.data.toString() || "")
-          .replace(
-            /%\{(.*?)\}/g,
-            (_, key: string) =>
-              (def as unknown as Record<string, string | undefined>)[key] || "",
-          );
-
-        await $.raw`${command}`.env(config.env);
+        return;
       }
+
+      $.logStep(`Launching ${def.id} with URL: ${url}`);
+
+      const config = await readConfig(def.id);
+
+      // This command is expected to be run from a desktop entry, so notify the user
+      await $`notify-send --app-name ${def.name} --urgency=low --icon=${def.id} --expire-time=5000 "Launching ${def.name}"`
+        .noThrow();
+
+      const parsed = new URL(url);
+      const token = parsed.searchParams.get("tk");
+      if (!token) {
+        throw new Error("No token found in URL");
+      }
+
+      const selectedProfileName = await (async () => {
+        if (config.runProfile) {
+          return config.runProfile;
+        } else if (Object.keys(config.profiles).length === 1) {
+          return Object.keys(config.profiles)[0];
+        } else {
+          const profileNames = Object.keys(config.profiles);
+          if (profileNames.length === 0) {
+            throw new Error("No profiles available for this game");
+          } else {
+            const actions = profileNames.map((
+              name,
+            ) => ($.escapeArg(`--action=${name}=${name}`)));
+            const selected =
+              await $`notify-send --app-name ${def.name} --urgency=critical --icon=${def.id} ${
+                $.rawArg(actions)
+              } ${"Select a profile to run"}`.noThrow().text();
+            $.logLight(`Selected profile: ${JSON.stringify(selected)}`);
+            return profileNames.includes(selected) ? selected : undefined;
+          }
+        }
+      })();
+      if (!selectedProfileName) {
+        throw new Error("No profile selected");
+      }
+
+      const profile = config.profiles[selectedProfileName];
+      if (!profile) {
+        throw new Error(
+          `Run profile '${selectedProfileName}' not found for ${def.id}`,
+        );
+      }
+
+      const systemReg = await readRegistryFile(
+        path.join(config.env.WINEPREFIX, "system.reg"),
+      );
+      const installDir = reg.findValue(
+        systemReg,
+        def.registryKey,
+        "InstallDir",
+      );
+      $.logLight(`Install directory: ${installDir?.data}`);
+
+      const command = profile.command
+        .replace("%u", $.escapeArg(url))
+        .replace("%t", $.escapeArg(token))
+        .replace("%r", (installDir?.data.toString() || "").replace(/ /g, "\\ "))
+        .replace(
+          /%\{(.*?)\}/g,
+          (_, key: string) =>
+            $.escapeArg(
+              (def as unknown as Record<string, string | undefined>)[key] || "",
+            ),
+        );
+
+      await $.raw`${command}`.env(config.env).printCommand();
     });
 }
 

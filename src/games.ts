@@ -23,11 +23,10 @@ export const defaultGames: GameDefinition[] = [
     profiles: {
       launcher: {
         command:
-          'systemd-cat -t %{id} umu-run "%r\\launcher\\modules\\bm2dx_launcher.exe" %u',
+          "systemd-cat -t %{id} umu-run %r\\launcher\\modules\\bm2dx_launcher.exe %u",
       },
       game: {
-        command:
-          'systemd-cat -t %{id} umu-run "%r\\game\\app\\bm2dx.exe" -t %t',
+        command: "systemd-cat -t %{id} umu-run %r\\game\\app\\bm2dx.exe -t %t",
       },
     },
   },
@@ -43,11 +42,11 @@ export const defaultGames: GameDefinition[] = [
     profiles: {
       launcher: {
         command:
-          'systemd-cat -t %{id} umu-run "%r\\launcher\\modules\\launcher.exe" %u',
+          "systemd-cat -t %{id} umu-run %r\\launcher\\modules\\launcher.exe %u",
       },
       game: {
         command:
-          'systemd-cat -t %{id} umu-run "%r\\game\\modules\\sv6c.exe" -t %t',
+          "systemd-cat -t %{id} umu-run %r\\game\\modules\\sv6c.exe -t %t",
       },
     },
   },
@@ -62,7 +61,7 @@ export const defaultGames: GameDefinition[] = [
     profiles: {
       launcher: {
         command:
-          'systemd-cat -t %{id} umu-run "%r\\launcher\\modules\\launcher.exe" %u',
+          "systemd-cat -t %{id} umu-run %r\\launcher\\modules\\launcher.exe %u",
       },
     },
   },
