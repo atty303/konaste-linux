@@ -3,7 +3,12 @@ import * as pathWin from "jsr:@std/path/windows";
 import xdg from "@404wolf/xdg-portable";
 import { colors } from "@cliffy/ansi/colors";
 import { Command, ValidationError } from "@cliffy/command";
-import { GameConfig, readConfig, tryReadConfig, writeConfig } from "./config.ts";
+import {
+  GameConfig,
+  readConfig,
+  tryReadConfig,
+  writeConfig,
+} from "./config.ts";
 import $ from "@david/dax";
 import * as reg from "./winereg.ts";
 import { readRegistryFile } from "./winereg.ts";
@@ -12,11 +17,17 @@ import { GameDefinition } from "./games.ts";
 function configCommand(def: GameDefinition) {
   return new Command()
     .description("Set configuration for the game")
-    .option("--env.* [value:string]", "Set environment variable (empty value to unset)")
+    .option(
+      "--env.* [value:string]",
+      "Set environment variable (empty value to unset)",
+    )
     .option("--run-profile [name:string]", "Run profile to use")
     .example("Show current configuration", "konaste game config")
-    .example("Set environment variables", "konaste game config --env WINEPREFIX=/path/to/prefix")
-   .action(async (options) => {
+    .example(
+      "Set environment variables",
+      "konaste game config --env WINEPREFIX=/path/to/prefix",
+    )
+    .action(async (options) => {
       const defaultConfig = {
         env: {
           WINEPREFIX: path.join(xdg.state(), "konaste", def.id),
@@ -29,13 +40,14 @@ function configCommand(def: GameDefinition) {
         ...defaultConfig,
         ...(await tryReadConfig(def.id) ?? {}),
       };
-     const config = {
+      const config = {
         ...config0,
         env: {
           ...config0.env,
           ...options.env,
         } as Record<string, string>,
-        runProfile: config0.runProfile ?? (options.runProfile === true ? undefined : options.runProfile),
+        runProfile: config0.runProfile ??
+          (options.runProfile === true ? undefined : options.runProfile),
       };
       for (
         const [key, _] of Object.entries(options.env ?? {}).filter((
@@ -45,12 +57,12 @@ function configCommand(def: GameDefinition) {
         delete config.env[key];
       }
 
-     $.log(JSON.stringify(config, null, 2));
-     if (Object.keys(options).length === 0) {
-       Deno.exit(0);
+      $.log(JSON.stringify(config, null, 2));
+      if (Object.keys(options).length === 0) {
+        Deno.exit(0);
       }
 
-     await writeConfig(def.id, config);
+      await writeConfig(def.id, config);
       $.logStep(`Configuration for ${def.id} saved`);
     });
 }
@@ -66,7 +78,10 @@ command string supports the following placeholders:
   %{id}: Game ID (e.g. 'infinitas', 'sdvx', etc.)
     `)
     .option("--default", "Set this profile as the default")
-    .option("--command <command:string>", `Set the launch command for the profile`)
+    .option(
+      "--command <command:string>",
+      `Set the launch command for the profile`,
+    )
     .option("--delete", "Delete the profile")
     .arguments("[name:string]")
     .example("List all profiles", "konaste game profile")
@@ -74,25 +89,27 @@ command string supports the following placeholders:
     .action(async (options, name) => {
       const config = await readConfig(def.id);
 
-      if (Object.keys(options).length === 0) {
-        $.log("Available profiles:");
-        for (const [name, profile] of Object.entries(def.profiles)) {
-          const isDefault = config.runProfile === name;
-          $.log(
-            `${isDefault ? `$${colors.green(name)} (default)` : colors.yellow(name)}: ${profile.command}`,
-          );
-        }
-        return;
-      }
-
       if (options.delete && name) {
         delete config.profiles[name];
       } else if (options.command && name) {
-        config.profiles[name].command = options.command;
+        config.profiles[name] = { command: options.command };
       }
 
       if (options.default) {
         config.runProfile = name;
+      }
+
+      $.log("Available profiles:");
+      for (const [name, profile] of Object.entries(config.profiles)) {
+        const isDefault = config.runProfile === name;
+        $.log(
+          `${
+            isDefault ? `$${colors.green(name)} (default)` : colors.yellow(name)
+          }: ${profile.command}`,
+        );
+      }
+      if (Object.keys(options).length === 0) {
+        return;
       }
 
       await writeConfig(def.id, config);
@@ -183,7 +200,14 @@ function associateCommand(def: GameDefinition) {
 
         const body = `[Desktop Entry]
 Name=${def.name}
-Name[ja]=${def.nameJA}
+${
+          def.nameLocalized
+            ? Object.entries(def.nameLocalized).map(([lang, name]) =>
+              `Name[${lang}]=${name}`
+            ).join("\n")
+            : ""
+        }
+Comment=Play ${def.name} on Konaste
 Exec=${selfPath} ${def.id} run %u
 Type=Application
 Categories=Game;
@@ -191,10 +215,12 @@ Terminal=false
 StartupNotify=true
 MimeType=${mimeType};
 ${iconName ? `Icon=${iconName}` : ""}`;
+
+        $.logStep("Installing desktop entry");
+
         $.logLight(`Desktop entry content:\n${body}`);
         await $.path(desktopPath).writeText(body);
 
-        $.log("Installing desktop entry");
         const applicationPath = path.join(
           xdg.data(),
           "applications",
@@ -266,11 +292,14 @@ function runCommand(def: GameDefinition) {
             if (profileNames.length === 0) {
               throw new Error("No profiles available for this game");
             } else {
-              const actions = profileNames.map((name) => ($.escapeArg(`${name}=${name}`)));
-              const selected = await $`notify-send --app-name ${def.id} --urgency=normal --icon=${def.id} ${$.rawArg(actions)}`.noThrow().text();
-              return selected in profileNames
-                ? selected
-                : undefined;
+              const actions = profileNames.map((
+                name,
+              ) => ($.escapeArg(`${name}=${name}`)));
+              const selected =
+                await $`notify-send --app-name ${def.id} --urgency=normal --icon=${def.id} ${
+                  $.rawArg(actions)
+                }`.noThrow().text();
+              return selected in profileNames ? selected : undefined;
             }
           }
         })();

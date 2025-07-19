@@ -15,19 +15,21 @@ function configPath(game: string) {
   return path.join(configDir, `${game}.json`);
 }
 
-export async function tryReadConfig(game: string): Promise<GameConfig | undefined> {
+export async function tryReadConfig(
+  gameId: string,
+): Promise<GameConfig | undefined> {
   try {
-    return await readConfig(game);
+    return await readConfig(gameId);
   } catch (_err) {
     return undefined;
   }
 }
 
-export async function readConfig(game: string): Promise<GameConfig> {
-  const path = $.path(configPath(game));
+export async function readConfig(gameId: string): Promise<GameConfig> {
+  const path = $.path(configPath(gameId));
   if (!await path.exists()) {
     throw new Error(
-      `Configuration not found. Please run '${game} configure' first.`,
+      `Configuration not found. Please run '${gameId} configure' first.`,
     );
   }
   return await path.readJson();

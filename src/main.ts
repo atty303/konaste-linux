@@ -29,7 +29,7 @@ try {
 
 const cmd = new Command()
   .name("konaste")
-  .version("0.1.0")
+  .version("main")
   .usage("<game> <command> [options]")
   .description("Manage Konaste games")
   .meta("deno", Deno.version.deno)
@@ -41,7 +41,7 @@ const cmd = new Command()
         new GithubProvider({ repository: "atty303/konaste-linux" }),
       ],
     }),
-)
+  )
   .command("ls", "List available games")
   .option("--json", "Output in JSON format")
   .action((options) => {
@@ -50,9 +50,13 @@ const cmd = new Command()
       Deno.exit(0);
     }
     for (const game of games) {
-      $.log(`${colors.green.bold(game.id)} ${colors.gray(`(URL: ${game.urlScheme})`)}: ${game.name} - ${colors.blue.underline(game.loginUrl)}`);
+      $.log(
+        `${colors.yellow.bold(game.id)} ${
+          colors.gray(`(URL: ${game.urlScheme})`)
+        }: ${game.name} - ${colors.blue.underline(game.loginUrl)}`,
+      );
     }
-  })
+  });
 
 games.forEach((game) => {
   cmd.command(game.id, gameCommand(game));
