@@ -21,7 +21,7 @@ jobs:
         with:
           github_token: ${{ github.token }}
 
-      - run: mise build
+      - run: mise run check
 
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4

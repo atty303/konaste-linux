@@ -5,7 +5,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "mise prepare-release --version ${nextRelease.version}"
+        "prepareCmd": "mise run prepare-release --version=${nextRelease.version}"
       }
     ],
     [

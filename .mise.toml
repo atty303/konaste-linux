@@ -3,6 +3,14 @@ deno = "latest"
 hk = "latest"
 pkl = "latest"
 
+[tasks.check]
+description = "Run all checks"
+run = [
+    "deno lint",
+    "deno fmt --check",
+    "deno check",
+]
+
 [tasks.build]
 description = "Build the CLI binary"
 run = [
@@ -12,6 +20,7 @@ run = [
 [tasks.prepare-release]
 description = "Prepare for release"
 run = [
+    "deno install",
     "echo '\"{{option(name='version') }}\"' > version.json",
     "mise build --arch=x86_64-unknown-linux-gnu",
     "mise build --arch=aarch64-unknown-linux-gnu",
