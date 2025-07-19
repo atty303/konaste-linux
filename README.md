@@ -279,7 +279,7 @@ To run the game with [gamescope](https://github.com/ValveSoftware/gamescope),
 you can use the following command to configure the profile:
 
 ```bash
-konaste infinitas profile gamescope --command "gamescope -f -r 120 --mangoapp -- umu-run %r\game\app\bm2dx.exe -t %t" --default
+konaste infinitas profile gamescope --command "gamescope -f -r 120 --mangoapp -- umu-run %r\\game\\app\\bm2dx.exe -t %t" --default
 ```
 
 > [!NOTE]
