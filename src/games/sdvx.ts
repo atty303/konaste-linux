@@ -24,7 +24,8 @@ export const sdvxCommand = gameCommand(def, {
         throw new Error("No token found in URL");
       }
 
-      const exe = `"C:\\Games\\SOUND VOLTEX EXCEED GEAR\\game\\modules\\sv6c.exe"`;
+      const exe =
+        `"C:\\Games\\SOUND VOLTEX EXCEED GEAR\\game\\modules\\sv6c.exe"`;
       const winCommand = `${exe} -t ${token}`;
       const command = config.runCommand.replace("%c", winCommand);
       await umu$`systemd-cat -t ${def.id} ${umu$.rawArg(command)}`;

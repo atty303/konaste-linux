@@ -47,7 +47,11 @@ function configureCommand(def: GameDefinition) {
           ...options.env,
         } as Record<string, string>,
       };
-      for (const [key, _] of Object.entries(options.env ?? {}).filter(([_, value]) => value === true)) {
+      for (
+        const [key, _] of Object.entries(options.env ?? {}).filter((
+          [_, value],
+        ) => value === true)
+      ) {
         delete config.env[key];
       }
       const path = $.path(configPath(def.id));
@@ -142,7 +146,7 @@ function runCommand(
         await $`xdg-open ${def.loginUrl}`;
       } else {
         $.logStep(`Launching ${def.id} with URL: ${url}`);
-       await runAction(umu$, config, url);
+        await runAction(umu$, config, url);
       }
     });
 }

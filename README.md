@@ -8,7 +8,9 @@
 
 This is a simple, customizable helper tool for launching
 [コナステ (konaste)](https://p.eagate.573.jp/game/eacloud/re/video/video_top.html)
-games on Linux.
+games on Linux. This tool aims to be “simple,” not “one‑click easy.” You’ll need
+to perform the required setup manually following the guide, but in return you
+gain the flexibility to apply unsupported configurations.
 
 Currently, it supports the following games:
 
@@ -17,9 +19,8 @@ Currently, it supports the following games:
 - [GITADORA](https://p.eagate.573.jp/game/eacgitadora/konagt/index.html)
 
 > [!WARNING]
-> I only regularly play INFINITAS, SDVX, and GITADORA. For other games, I’ve only verified that they launch.
-
-This tool aims to be “simple,” not “one‑click easy.” You’ll need to perform the required setup manually following the guide, but in return you gain the flexibility to apply unsupported configurations.
+> I only regularly play INFINITAS, SDVX, and GITADORA. For other games, I’ve
+> only verified that they launch.
 
 ## How it works
 
@@ -33,12 +34,17 @@ Linux desktop environments and provides support for configuring Wine.
 
 - Modern Linux distribution with a desktop environment
   - systemd-cat, update-desktop-database, xdg-mime, xdg-open
-- [umu-launcher](https://github.com/Open-Wine-Components/umu-launcher) and it's dependencies
-   - I recommend using Proton via umu‑launcher. Since Proton containerizes all the dependencies that Wine requires, it can run reproducibly on any system.
-   - But you can also launch Wine directly if you prefer.
-- Recommended using [atty303/proton-ge-custom](https://github.com/atty303/proton-ge-custom) to fix audio delay issues
+- [umu-launcher](https://github.com/Open-Wine-Components/umu-launcher) and it's
+  dependencies
+  - I recommend using Proton via umu‑launcher. Since Proton containerizes all
+    the dependencies that Wine requires, it can run reproducibly on any system.
+  - But you can also launch Wine directly if you prefer.
+- Recommended using
+  [atty303/proton-ge-custom](https://github.com/atty303/proton-ge-custom) to fix
+  audio delay issues
 
-I’m using [Bazzite](https://bazzite.gg/), and the minimal setup in this guide works out of the box without any extra system settings.
+I’m using [Bazzite](https://bazzite.gg/), and the minimal setup in this guide
+works out of the box without any extra system settings.
 
 ## Installation
 
@@ -111,7 +117,8 @@ konaste infinitas run
 > Wine does not support WASAPI Exclusive Mode on `winepulse.drv`(PulseAudio), so
 > you must use Shared Mode.
 
-9. After the audio output is set, click the `ゲーム起動` button to launch the game.
+9. After the audio output is set, click the `ゲーム起動` button to launch the
+   game.
 
 </details>
 
@@ -219,7 +226,8 @@ environment. It allows you to launch the game from the browser.
 
 ### `konaste <game> exec <...command>`
 
-This command executes the specified command with configured environment variables.
+This command executes the specified command with configured environment
+variables.
 
 - `konaste infinitas exec umu-run winetricks <verbs>`: Runs Winetricks with the
   specified verbs.
@@ -230,16 +238,15 @@ This command executes the specified command with configured environment variable
 This command opens the login URL in your default web browser if no URL is
 provided.
 
-And this is executed by the URL scheme registered by the `associate`
-command. It runs the game in GUI session, so logs are output to the systemd
-journal.
+And this is executed by the URL scheme registered by the `associate` command. It
+runs the game in GUI session, so logs are output to the systemd journal.
 
 ## Tweaks for better performance
 
 ### Enable ntsync
 
-`ntsync` runs faster than the existing `esync` or `fsync` methods.
-It requires Linux kernel 6.14 or newer, and becomes available when /dev/ntsync exists.
+`ntsync` runs faster than the existing `esync` or `fsync` methods. It requires
+Linux kernel 6.14 or newer, and becomes available when /dev/ntsync exists.
 
 To enable ntsync, run the following command:
 
@@ -273,12 +280,13 @@ konaste infinitas configure --entrypoint launcher --run-command "umu-run %c"
 ### Setup Low latency audio with PipeWire
 
 Use [PipeWire](https://www.google.com/search?client=firefox-b-d&q=pipewire) as
-  the audio server for low latency audio with flexible routing and maximum
-  compatibility.
+the audio server for low latency audio with flexible routing and maximum
+compatibility.
 
 Configure linux side audio settings for low latency audio:
 
 `~/.config/pipewire/pipewire.conf.d/90-low-latency.conf`:
+
 ```
 context.properties = {
   default.clock.rate = 48000
@@ -296,6 +304,7 @@ context.properties = {
 ```
 
 `~/.config/pipewire/pipewire-pulse.conf.d/90-rt.conf`:
+
 ```
 context.modules = [
   {
@@ -311,6 +320,7 @@ context.modules = [
 Configure a dedicated virtual audio device for games:
 
 `~/.config/pipewire/pipewire.conf.d/90-infinitas.conf`:
+
 ```
 context.modules = [
   {
@@ -421,10 +431,12 @@ All game functionality has been tested on the following configurations:
 - Display:
   - Primary: FHD @120Hz via HDMI
   - Secondary: Full HD Monitor @60Hz via USB-C
-- Controller: [SOUND VOLTEX CONSOLE -NEMSYS- Ultimate Model (2017)](https://www.konamistyle.jp/products/detail.php?product_id=110908)
+- Controller:
+  [SOUND VOLTEX CONSOLE -NEMSYS- Ultimate Model (2017)](https://www.konamistyle.jp/products/detail.php?product_id=110908)
 - Proton: GE-Proton10-9-wma
 
-There’s no noticeable difference compared to running it on Windows 11 in a dual-boot setup.
+There’s no noticeable difference compared to running it on Windows 11 in a
+dual-boot setup.
 
 #### Alternative configuration for performance testing
 
@@ -438,7 +450,10 @@ There’s no noticeable difference compared to running it on Windows 11 in a dua
   - Secondary: Full HD Monitor @60Hz via USB-C
 - Proton: GE-Proton10-9
 
-The backgrounds in VIVID WAVE—like “NOT YOUR IDOL”—are extremely GPU-intensive, driving GPU utilization up to around 95% and causing momentary drops to about 100 fps. This happens on Windows 11 too, so it’s simply a limitation of the Radeon 780M.
+The backgrounds in VIVID WAVE—like “NOT YOUR IDOL”—are extremely GPU-intensive,
+driving GPU utilization up to around 95% and causing momentary drops to about
+100 fps. This happens on Windows 11 too, so it’s simply a limitation of the
+Radeon 780M.
 
 ### GITADORA
 
