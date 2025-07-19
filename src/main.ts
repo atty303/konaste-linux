@@ -1,5 +1,5 @@
 import { colors } from "@cliffy/ansi/colors";
-import { Command } from "@cliffy/command";
+import { Command, ValidationError } from "@cliffy/command";
 import { CompletionsCommand } from "@cliffy/command/completions";
 import { UpgradeCommand } from "@cliffy/command/upgrade";
 import { GithubProvider } from "@cliffy/command/upgrade/provider/github";
@@ -41,7 +41,10 @@ const cmd = new Command()
       provider: [
         new GithubProvider({ repository: "atty303/konaste-linux" }),
       ],
-    }),
+    }).action(() => {
+      // Upgrade command is not supported for single binary distribution
+      throw new ValidationError("This command is not supported yet. Please update manually.");
+    })
   )
   .command("ls", "List available games")
   .option("--json", "Output in JSON format")
