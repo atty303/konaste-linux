@@ -206,6 +206,10 @@ You can explore the available commands by specifying the `--help` option.
 
 This command lists the available games that can be managed by this tool.
 
+You can add new games by creating a game definition file in the
+`~/.config/konaste/games.json` file. Format of the game definition file is as
+`defaultGames` in the [src/games.ts](src/games.ts).
+
 ### `konaste <game> config`
 
 This command configures the environment for the specified game. If user
