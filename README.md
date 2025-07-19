@@ -6,7 +6,7 @@
 > YOU MUST HAVE A LEGAL SUBSCRIPTION TO PLAY THESE GAMES. THIS TOOL DOES NOT
 > ALTER ANY GAME FILES.
 
-This is a helper tool for running
+This is a simple, customizable helper tool for launching
 [コナステ (konaste)](https://p.eagate.573.jp/game/eacloud/re/video/video_top.html)
 games on Linux.
 
@@ -16,9 +16,10 @@ Currently, it supports the following games:
 - [SOUND VOLTEX EXCEED GEAR](https://p.eagate.573.jp/game/eacsdvx/vi/index.html)
 - [GITADORA](https://p.eagate.573.jp/game/eacgitadora/konagt/index.html)
 
-> [!NOTE]
-> I'm not playing DDR, pop'n music, or nostalgia so I don't have plans for
-> supporting them.
+> [!WARNING]
+> I only regularly play INFINITAS, SDVX, and GITADORA. For other games, I’ve only verified that they launch.
+
+This tool aims to be “simple,” not “one‑click easy.” You’ll need to perform the required setup manually following the guide, but in return you gain the flexibility to apply unsupported configurations.
 
 ## How it works
 
@@ -32,9 +33,12 @@ Linux desktop environments and provides support for configuring Wine.
 
 - Modern Linux distribution with a desktop environment
   - systemd-cat, update-desktop-database, xdg-mime, xdg-open
-- [umu-launcher](https://github.com/Open-Wine-Components/umu-launcher)
+- [umu-launcher](https://github.com/Open-Wine-Components/umu-launcher) and it's dependencies
+   - I recommend using Proton via umu‑launcher. Since Proton containerizes all the dependencies that Wine requires, it can run reproducibly on any system.
+   - But you can also launch Wine directly if you prefer.
+- Recommended using [atty303/proton-ge-custom](https://github.com/atty303/proton-ge-custom) to fix audio delay issues
 
-On [Bazzite](https://bazzite.gg/), it works with just the steps in this README.
+I’m using [Bazzite](https://bazzite.gg/), and the minimal setup in this guide works out of the box without any extra system settings.
 
 ## Installation
 
@@ -53,19 +57,28 @@ or install it with [ubi](https://github.com/houseabsolute/ubi).
 ubi install -p atty303/konaste-linux -e konaste -i ~/.local/bin
 ```
 
-## Minimum steps to run the games
+## Minimal steps to launch the games
+
+You need to prepare the PulseAudio sink that configured sample rate to 44100Hz
+for the game audio output. For example, you can use the following command to
+create a loopback sink temporarily:
+
+```bash
+pw-loopback -m "[ FL FR ]" --capture-props='media.class=Audio/Sink node.name=konaste-sink node.description=Konaste audio.rate=44100'
+```
+
+To persist the sink, you can configure PipeWire configuration.
 
 ### beatmania IIDX INFINTAS
 
 <details>
 <summary>Click to expand the steps</summary>
 
-1. Run the following command to configure the wine prefix:
+1. Run the following command to configure and create the wine prefix:
 
 ```bash
-konaste infinitas configure --env.PROTONPATH=GE-Proton10-8
+konaste infinitas configure --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
 konaste infinitas create
-konaste infinitas exec umu-run winetricks ie8
 ```
 
 2. Download the installer from the
@@ -74,7 +87,7 @@ konaste infinitas exec umu-run winetricks ie8
 3. Run the following command to install it:
 
 ```bash
-konaste infinitas exec umu-run msiexec /i ~/Downloads/infinitas_installer_2022060800.msi
+konaste infinitas exec WINEDLLOVERRIDES="ieframe=d" umu-run msiexec /i ~/Downloads/infinitas_installer_2022060800.msi
 ```
 
 4. Run the following command to associate the URL scheme with the game:
@@ -98,6 +111,8 @@ konaste infinitas run
 > Wine does not support WASAPI Exclusive Mode on `winepulse.drv`(PulseAudio), so
 > you must use Shared Mode.
 
+9. After the audio output is set, click the `ゲーム起動` button to launch the game.
+
 </details>
 
 ### SOUND VOLTEX EXCEED GEAR
@@ -105,10 +120,10 @@ konaste infinitas run
 <details>
 <summary>Click to expand the steps</summary>
 
-1. Run the following command to configure the wine prefix:
+1. Run the following command to configure and create the wine prefix:
 
 ```bash
-konaste sdvx configure --env.PROTONPATH=GE-Proton
+konaste sdvx configure --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
 konaste sdvx create
 ```
 
@@ -131,7 +146,7 @@ konaste sdvx associate
 5. Run the following command to open the login page in your browser:
 
 ```bash
-konaste infinitas run
+konaste sdvx run
 ```
 
 <img width="502" height="495" alt="Screen Shot 2025-07-14 at 16 01 02" src="https://github.com/user-attachments/assets/2eaab921-bb50-49bc-99c8-e1418125662e" />
@@ -140,36 +155,35 @@ konaste infinitas run
 
 ### GITADORA
 
-**This guide is outdated. Need to be updated.**
-
 <details>
 <summary>Click to expand the steps</summary>
 
 1. Run the following command to configure the wine prefix:
 
 ```bash
-konaste sdvx configure --env.PROTONPATH=GE-Proton
-konaste sdvx create
+konaste gitadora configure --env.PROTONPATH=GE-Proton10-9 --env.PULSE_SINK=konaste-sink
+konaste gitadora create
 ```
 
 2. Download the installer from the
    [official website](https://p.eagate.573.jp/game/eacgitadora/konagt/download/installer.html)
    (you need to log in to your account).
-
 3. Run the following command to install it:
 
 ```bash
-konaste gitadora exec WINEDLLOVERRIDES="ieframe=d" umu-run msiexec /i ~/Downloads/GITRADORA_installer.msi
+konaste gitadora exec WINEDLLOVERRIDES="ieframe=d" umu-run msiexec /i ~/Downloads/GITADORA_installer.msi
 ```
 
-- Select the default options during installation.
-- This will install the game to `~/.local/state/konaste/gitadora` (you can
-  change this by passing the `--wine-prefix` option).
-
-3. Run the following command to open the login page in your browser:
+4. Run the following command to associate the URL scheme with the game:
 
 ```bash
-konaste gitadora login
+konaste gitadora associate
+```
+
+5. Run the following command to open the login page in your browser:
+
+```bash
+konaste gitadora run
 ```
 
 4. After logging in, click the `ゲーム起動` button to launch the game.
@@ -205,24 +219,33 @@ environment. It allows you to launch the game from the browser.
 
 ### `konaste <game> exec <...command>`
 
-This command executes the specified command in the Wine prefix of the game.
+This command executes the specified command with configured environment variables.
 
 - `konaste infinitas exec umu-run winetricks <verbs>`: Runs Winetricks with the
   specified verbs.
 - `konaste infinitas exec umu-run winecfg`: Opens the Wine configuration dialog.
 
-### `konaste <game> run <url>`
+### `konaste <game> run [url]`
 
-This command is executed by the URL scheme registered by the `associate`
+This command opens the login URL in your default web browser if no URL is
+provided.
+
+And this is executed by the URL scheme registered by the `associate`
 command. It runs the game in GUI session, so logs are output to the systemd
 journal.
 
-### `konaste <game> login`
+## Tweaks for better performance
 
-This command opens the login page of the specified game in your default web
-browser.
+### Enable ntsync
 
-## Tips
+`ntsync` runs faster than the existing `esync` or `fsync` methods.
+It requires Linux kernel 6.14 or newer, and becomes available when /dev/ntsync exists.
+
+To enable ntsync, run the following command:
+
+```bash
+konaste infinitas configure --env.PROTON_USE_NTSYNC=1
+```
 
 ### Use gamescope
 
@@ -230,7 +253,7 @@ To run the game with [gamescope](https://github.com/ValveSoftware/gamescope),
 you can use the following command to configure the entrypoint and run command:
 
 ```bash
-konaste infinitas configure --entrypoint game --run-command "gamescope --rt -f -r 120 --filter linear --mangoapp -- umu-run %c"
+konaste infinitas configure --entrypoint game --run-command "gamescope -f -r 120 --mangoapp -- umu-run %c"
 ```
 
 > [!NOTE]
@@ -247,16 +270,15 @@ konaste infinitas configure --entrypoint launcher --run-command "umu-run %c"
 > If `--entrypoint launcher` with gamescope is used, the launcher will run in
 > gamescope but the game itself will not.
 
-### Low latency audio setup
+### Setup Low latency audio with PipeWire
 
-- Use [PipeWire](https://www.google.com/search?client=firefox-b-d&q=pipewire) as
+Use [PipeWire](https://www.google.com/search?client=firefox-b-d&q=pipewire) as
   the audio server for low latency audio with flexible routing and maximum
   compatibility.
 
 Configure linux side audio settings for low latency audio:
 
 `~/.config/pipewire/pipewire.conf.d/90-low-latency.conf`:
-
 ```
 context.properties = {
   default.clock.rate = 48000
@@ -271,7 +293,10 @@ context.properties = {
   default.clock.max-quantum = 64
   default.clock.quantum-limit = 64
 }
+```
 
+`~/.config/pipewire/pipewire-pulse.conf.d/90-rt.conf`:
+```
 context.modules = [
   {
     name = libpipewire-module-rt
@@ -286,41 +311,31 @@ context.modules = [
 Configure a dedicated virtual audio device for games:
 
 `~/.config/pipewire/pipewire.conf.d/90-infinitas.conf`:
-
 ```
 context.modules = [
   {
     name = libpipewire-module-loopback
     args = {
-      node.description = "INFINITAS Loopback"
+      node.description = "Konaste Loopback"
       audio.position = [ FL FR ]
       capture.props = {
-        node.name = "infinitas-sink"
+        node.name = "konaste-sink"
         media.class = "Audio/Sink"
-        node.description = "INFINITAS Sink"
-        device.description = "INFINITAS Sink"
+        node.description = "Konaste Sink"
+        device.description = "Konaste Sink"
         device.class = "sound"
         device.icon-name = "audio-card"
         node.virtual = false
-        # IMPORTANT: Set the sample rate to 44100Hz for compatibility with INFINITAS.
+        # IMPORTANT: Set the sample rate to 44100Hz for compatibility with Konaste games.
         audio.rate = 44100
         audio.channels = 2
       }
       playback.props = {
-        node.name = "infinitas-output"
+        node.name = "konaste-output"
         node.passive = true
-        # Adjust the target object to your audio output device.
-        target.object = "alsa_output.pci-0000_c4_00.6.analog-stereo"
 
-        # stereo to 7.1ch upmixing, unless delete below.
-        stream.dont-remix = true
-        audio.position = [ FL FR RL RR FC LFE SL SR ]
-        channelmix.upmix = true
-        channelmix.upmix-method = "psd"
-        channelmix.lfe-cutoff = 150
-        channelmix.fc-cutoff = 12000
-        channelmix.rear-delay = 12.0
-        channelmix.stereo-widen = 0.1
+        # You can specify the target audio output device here or leave it as default.
+        # target.object = "alsa_output.pci-0000_c4_00.6.analog-stereo"
       }
     }
   }
@@ -331,13 +346,6 @@ Apply the configuration by running:
 
 ```bash
 systemctl --user restart pipewire pipewire-pulse
-```
-
-Configure the game to use the virtual audio device, run `winecfg` to set the
-audio output device to `INFINITAS Loopback`.
-
-```bash
-konaste infinitas exec umu-run winecfg
 ```
 
 Configure the game side audio buffer size to reduce latency:
@@ -394,7 +402,7 @@ All game functionality has been tested on the following configurations:
   - Primary: Hisense 43E7N 4K @120Hz via HDMI
   - Secondary: Full HD Monitor @60Hz via USB-C
 - Controller: GAMO2 PHOENIXWAN+ LMT x2
-- Proton: GE-Proton10-8 (GE-Proton10-9 is failed to install ie8)
+- Proton: GE-Proton10-9-wma
 
 Although I’m using displays with different refresh rates, there’s no problem
 running at 120 fps. CPU load is around 10% and GPU load is around 70% during
@@ -403,11 +411,38 @@ compared to running it on Windows 11 in a dual-boot setup.
 
 ### SOUND VOLTEX EXCEED GEAR
 
-:under_construction:
+All game functionality has been tested on the following configurations:
+
+- Hardware: Minisforum MS-A2
+  - CPU: AMD Ryzen 9 7945HX (16C / 2.5 - 5.4 GHz)
+  - GPU: AMD Radeon RX6400 (4GB)
+  - RAM: 32 GB
+- Audio: Creative Sound BlasterX G6 (7.1ch Virtual Surround)
+- Display:
+  - Primary: FHD @120Hz via HDMI
+  - Secondary: Full HD Monitor @60Hz via USB-C
+- Controller: [SOUND VOLTEX CONSOLE -NEMSYS- Ultimate Model (2017)](https://www.konamistyle.jp/products/detail.php?product_id=110908)
+- Proton: GE-Proton10-9-wma
+
+There’s no noticeable difference compared to running it on Windows 11 in a dual-boot setup.
+
+#### Alternative configuration for performance testing
+
+- Hardware: Minisforum UM790 Pro
+  - CPU: AMD Ryzen 9 7940HS (8C / 4.0 - 5.2 GHz)
+  - GPU: AMD Radeon 780M Integrated Graphics (UMA 6GB)
+  - RAM: 64 GB
+- Audio: Sennheiser GSX1000 (7.1ch Virtual Surround)
+- Display:
+  - Primary: Hisense 43E7N 4K @120Hz via HDMI
+  - Secondary: Full HD Monitor @60Hz via USB-C
+- Proton: GE-Proton10-9
+
+The backgrounds in VIVID WAVE—like “NOT YOUR IDOL”—are extremely GPU-intensive, driving GPU utilization up to around 95% and causing momentary drops to about 100 fps. This happens on Windows 11 too, so it’s simply a limitation of the Radeon 780M.
 
 ### GITADORA
 
-All game functionality has been tested on the following configurations:
+Drummania functionality has been tested on the following configurations:
 
 - Hardware: LENOVO ThinkCentre M715q
   - CPU: AMD Ryzen 5 PRO 2400GE (4C / 3.2 - 3.8 GHz)
@@ -444,13 +479,16 @@ execution path. You must specify the `--self-path` option when running the
 - Graphics API: Direct3D 9
 - Audio API: WASAPI (Shared Mode, Exclusive Mode), ASIO (Hidden feature)
   - Requires 44100Hz sample rate
+  - Audio files are in WMAv2 format
+  - Media Foundation is used for decoding
 - Native resolution: 1920x1080
 - Maximum frame rate: 120 fps
 
-### SOUN VOLTEX EXCEED GEAR
+### SOUND VOLTEX EXCEED GEAR
 
 - Graphics API:
-- Audio API: WASAPI (Shared Mode, Exclusive Mode), ASIO
+- Audio API: WASAPI (Shared Mode, Exclusive Mode), ASIO, DirectSound
+  - Requires 44100Hz sample rate
 - Native resolution: 1920x1080
 - Maximum frame rate: 120 fps
 
