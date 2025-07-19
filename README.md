@@ -10,7 +10,8 @@ This is a simple, customizable helper tool for launching
 [コナステ (konaste)](https://p.eagate.573.jp/game/eacloud/re/video/video_top.html)
 games on Linux. This tool aims to be “simple,” not “one‑click easy.” You’ll need
 to perform the required setup manually following the guide, but in return you
-gain the flexibility to apply unsupported configurations.
+gain the flexibility to customize the configuration to your liking and work with
+future dependencies updates.
 
 Currently, it supports the following games:
 
@@ -28,7 +29,8 @@ Konaste games authenticate your subscription in the browser, then launch the
 game launcher via a custom URL scheme that includes an authorization token.
 Since the standalone executable won't run by itself, traditional launchers like
 Lutris cannot be used. This tool automates the registration of URL schemes in
-Linux desktop environments and provides support for configuring Wine.
+Linux desktop environments and provides a command wrapper for launching games
+with the necessary environment variables.
 
 ## Prerequisites
 
@@ -114,7 +116,7 @@ konaste infinitas run
 8. After the update is complete, click the `SETTING` button and set audio output
    to `WASAPI (共有モード)`(Shared Mode).
 
-> [!NOTE]
+> [!WARNING]
 > Wine does not support WASAPI Exclusive Mode on `winepulse.drv`(PulseAudio), so
 > you must use Shared Mode.
 
@@ -233,6 +235,8 @@ without launcher.
 - `konaste infinitas profile <name> --command <command>`: Creates or updates a
   profile with the specified name and command.
 - `konaste infinitas profile <name> --delete`: Deletes the specified profile.
+- `konaste infinitas profile <name> --default`: Sets the specified profile as
+  the default profile.
 
 ### `konaste <game> associate`
 
@@ -261,7 +265,7 @@ will execute the command specified in the selected profile.
 ### Enable ntsync
 
 `ntsync` runs faster than the existing `esync` or `fsync` methods. It requires
-Linux kernel 6.14 or newer, and becomes available when /dev/ntsync exists.
+Linux kernel 6.14 or newer, and becomes available when `/dev/ntsync` exists.
 
 To enable ntsync, run the following command:
 
@@ -272,10 +276,10 @@ konaste infinitas config --env.PROTON_USE_NTSYNC=1
 ### Use gamescope
 
 To run the game with [gamescope](https://github.com/ValveSoftware/gamescope),
-you can use the following command to configure the entrypoint and run command:
+you can use the following command to configure the profile:
 
 ```bash
-konaste infinitas config --entrypoint game --run-command "gamescope -f -r 120 --mangoapp -- umu-run %c"
+konaste infinitas profile gamescope --command "gamescope -f -r 120 --mangoapp -- umu-run %r\game\app\bm2dx.exe -t %t" --default
 ```
 
 > [!NOTE]
@@ -285,18 +289,13 @@ konaste infinitas config --entrypoint game --run-command "gamescope -f -r 120 --
 To revert this configuration when game update is required, you can run:
 
 ```bash
-konaste infinitas config --entrypoint launcher --run-command "umu-run %c"
+konaste infinitas profile launcher --default
 ```
-
-> [!NOTE]
-> If `--entrypoint launcher` with gamescope is used, the launcher will run in
-> gamescope but the game itself will not.
 
 ### Setup Low latency audio with PipeWire
 
-Use [PipeWire](https://www.google.com/search?client=firefox-b-d&q=pipewire) as
-the audio server for low latency audio with flexible routing and maximum
-compatibility.
+Use [PipeWire](https://pipewire.org/) as the audio server for low latency audio
+with flexible routing and maximum compatibility.
 
 Configure linux side audio settings for low latency audio:
 
@@ -396,7 +395,7 @@ Since I was new to Linux’s audio system, I referred to the following.
 ### Locale issues
 
 Maybe Koanste games expect the system to be configured for Japanese locale. If
-you encounter issues, try setting the locale to Japanese:
+you encounter issues, try setting the locale to Japanese may help.
 
 ```bash
 konaste infinitas config --env.LANG=ja_JP.UTF-8
@@ -416,7 +415,30 @@ game settings.
 
 You need to provide audio output device that configured sample rate to 44100Hz.
 
+## Development
+
+### Requirements
+
+1. Activate [mise](https://mise.jdx.dev/).
+2. Run `mise install` in the project root to install the dependencies.
+3. Run `hk install --mise` to install the git hooks for formatting and linting.
+
+### Local Development
+
+To install the tool from source, run the following command:
+
+```bash
+deno install -A --global -n konaste --config ./deno.jsonc src/main.ts
+```
+
+If you're not using the compiled binary, the tool cannot determine its own
+execution path. You must specify the `--self-path` option when running the
+`associate` command.
+
 ## Verified Configurations
+
+<details>
+<summary>Click to expand the verified configurations</summary>
 
 ### All games
 
@@ -491,27 +513,12 @@ Drummania functionality has been tested on the following configurations:
 - MIDI Drums: Roland TD-1 (USB)
 - Proton: GE-Proton10-8
 
-## Development
-
-### Requirements
-
-1. Activate [mise](https://mise.jdx.dev/).
-2. Run `mise install` to install dependencies.
-3. Run `hk install --mise` to install the git hooks for formatting and linting.
-
-### Local Development
-
-To install the tool from source, run the following command:
-
-```bash
-deno install -A --global -n konaste --config ./deno.jsonc src/main.ts
-```
-
-If you're not using the compiled binary, the tool cannot determine its own
-execution path. You must specify the `--self-path` option when running the
-`konaste` command.
+</details>
 
 ## Game technical details
+
+<details>
+<summary>Click to expand the game technical details that I'm obserbed when developing this tool</summary>
 
 ### beatmania IIDX INFINTAS
 
@@ -543,3 +550,5 @@ execution path. You must specify the `--self-path` option when running the
 
 - [mizztgc/konaste-linux](https://github.com/mizztgc/konaste-linux) - Another
   work for konaste games on Linux that uses bash scripts and doesn't use Proton.
+
+</details>

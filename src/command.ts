@@ -182,6 +182,7 @@ function associateCommand(def: GameDefinition) {
       const iconName = await (async () => {
         try {
           const dest = path.join(xdg.data(), "icons", `${def.id}.png`);
+          await $.path(dest).parent()?.ensureDir();
           await extractIcon(def, config, dest);
           return def.id;
         } catch (err) {
