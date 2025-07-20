@@ -13,6 +13,7 @@ import $ from "@david/dax";
 import * as reg from "./winereg.ts";
 import { readRegistryFile } from "./winereg.ts";
 import { GameDefinition } from "./games.ts";
+import { startProxy } from "./obs.ts";
 
 function configCommand(def: GameDefinition) {
   return new Command()
@@ -344,6 +345,69 @@ function runCommand(def: GameDefinition) {
     });
 }
 
+function winePathToUnix(winePath: string, winePrefix: string): string {
+  let driveLetter = "z";
+  let drivePath = winePath;
+  if (winePath.substring(1).toLowerCase().startsWith(":")) {
+    // Wine path like "Z:\path\to\file"
+    driveLetter = winePath[0].toLowerCase();
+    drivePath = winePath.substring(2); // Remove "Z:"
+    drivePath = drivePath.startsWith("\\") ? drivePath.substring(1) : drivePath;
+  }
+  const unixPath = `${winePrefix}/drive_${driveLetter}/${
+    drivePath.replace(/\\/g, "/")
+  }`;
+  return unixPath;
+}
+
+function obsWebSocketProxyCommand(def: GameDefinition) {
+  return new Command()
+    .description($.dedent`
+      Start a WebSocket proxy for OBS
+
+      Intended to be used with analyzer tools like sdvx-helper running inside Wine.
+      Such tools can connect to this proxy and send commands to OBS.
+      Currently, it only transforms the SaveSourceScreenshot request to use a Unix path.
+    `)
+    .option("--obs-url <url>", "URL of the OBS WebSocket server", {
+      required: true,
+      default: "ws://127.0.0.1:4455",
+    })
+    .option(
+      "--hostname <hostname:string>",
+      "Hostname for the WebSocket proxy",
+      {
+        required: true,
+        default: "127.0.0.1",
+      },
+    )
+    .option("--port <port:number>", "Port for the WebSocket proxy", {
+      required: true,
+      default: 4456,
+    })
+    .action(async (options) => {
+      const config = await readConfig(def.id);
+      if (!config.env.WINEPREFIX) {
+        throw new Error(
+          `WINEPREFIX is not set in the configuration for ${def.id}`,
+        );
+      }
+
+      await startProxy({
+        ...options,
+        transform: (data) => {
+          const request = JSON.parse(data);
+          if (request?.d?.requestType === "SaveSourceScreenshot") {
+            const winePath = request.d?.requestData?.imageFilePath;
+            const unixPath = winePathToUnix(winePath, config.env.WINEPREFIX);
+            request.d.requestData.imageFilePath = unixPath;
+          }
+          return Promise.resolve(JSON.stringify(request));
+        },
+      });
+    });
+}
+
 export function gameCommand(def: GameDefinition) {
   return new Command()
     .description(`Commands for ${def.name}`)
@@ -351,5 +415,6 @@ export function gameCommand(def: GameDefinition) {
     .command("profile", profileCommand(def))
     .command("associate", associateCommand(def))
     .command("exec", execCommand(def))
-    .command("run", runCommand(def));
+    .command("run", runCommand(def))
+    .command("obs-websocket-proxy", obsWebSocketProxyCommand(def));
 }
