@@ -3,6 +3,12 @@ deno = "latest"
 hk = "latest"
 pkl = "latest"
 
+[tasks.install-cli]
+description = "Install the CLI"
+run = [
+    "deno install -A --global --force --config deno.jsonc --name konaste --root {{option(name='root', default='~/.deno')}} src/main.ts",
+]
+
 [tasks.check]
 description = "Run all checks"
 run = [

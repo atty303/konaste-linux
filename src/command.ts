@@ -346,17 +346,12 @@ function runCommand(def: GameDefinition) {
 }
 
 function winePathToUnix(winePath: string, winePrefix: string): string {
-  let driveLetter = "z";
   let drivePath = winePath;
-  if (winePath.substring(1).toLowerCase().startsWith(":")) {
+  if (winePath.length >= 2 && winePath[1] === ":") {
     // Wine path like "Z:\path\to\file"
-    driveLetter = winePath[0].toLowerCase();
-    drivePath = winePath.substring(2); // Remove "Z:"
-    drivePath = drivePath.startsWith("\\") ? drivePath.substring(1) : drivePath;
+    drivePath = winePath.substring(0, 1).toLowerCase() + winePath.substring(1);
   }
-  const unixPath = `${winePrefix}/drive_${driveLetter}/${
-    drivePath.replace(/\\/g, "/")
-  }`;
+  const unixPath = `${winePrefix}/dosdevices/${drivePath.replace(/\\/g, "/")}`;
   return unixPath;
 }
 
@@ -385,6 +380,7 @@ function obsWebSocketProxyCommand(def: GameDefinition) {
       required: true,
       default: 4456,
     })
+    .option("-v, --verbose", "Enable verbose logging")
     .action(async (options) => {
       const config = await readConfig(def.id);
       if (!config.env.WINEPREFIX) {

@@ -4,6 +4,7 @@ export async function startProxy(options: {
   obsUrl: string;
   hostname: string;
   port: number;
+  verbose?: boolean;
   transform: (request: string) => Promise<string>;
 }) {
   const server = Deno.serve({
@@ -38,16 +39,23 @@ export async function startProxy(options: {
       // client -> obs
       clientSock.onmessage = async (ev) => {
         let data = ev.data;
+        if (options.verbose) $.logLight("Received message from client:", data);
         try {
           data = await options.transform(data);
         } catch (error) {
           $.logError("Error transforming message:", error);
+        }
+        if (options.verbose) {
+          $.logLight("Transformed message to send to OBS:", data);
         }
         obsSock.send(data);
       };
 
       // obs -> client
       obsSock.onmessage = (ev) => {
+        if (options.verbose) {
+          $.logLight("Sending received message from OBS:", ev.data);
+        }
         clientSock.send(ev.data);
       };
 
