@@ -1,3 +1,6 @@
 {
-  "deno.enable": true
+  "deno.enable": true,
+  "debug.javascript.defaultRuntimeExecutable": {
+    "pwa-node": "${workspaceFolder}/.vscode/mise-tools/node"
+  }
 }
