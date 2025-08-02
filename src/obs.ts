@@ -65,5 +65,14 @@ export async function startProxy(options: {
       return response;
     },
   });
+  Deno.addSignalListener("SIGINT", () => {
+    $.log("Received SIGINT, shutting down server...");
+    server.shutdown();
+  });
+  Deno.addSignalListener("SIGTERM", () => {
+    $.log("Received SIGTERM, shutting down server...");
+    server.shutdown();
+  });
+
   return await server.finished;
 }
