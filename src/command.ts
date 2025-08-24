@@ -331,7 +331,7 @@ function runCommand(def: GameDefinition) {
 
       const command = profile.command
         .replace("%u", $.escapeArg(url))
-        .replace("%t", $.escapeArg(token))
+        .replace("%t", token)
         .replace("%r", (installDir?.data.toString() || "").replace(/ /g, "\\ "))
         .replace(
           /%\{(.*?)\}/g,
