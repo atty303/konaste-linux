@@ -80,7 +80,8 @@ command string supports the following placeholders:
     .option(
       "--command <command:string>",
       `Set the launch command for the profile`,
-    )
+  )
+    .option("--cwd <dir:file>", "Set the working directory for the profile")
     .option("--delete", "Delete the profile")
     .arguments("[name:string]")
     .example("List all profiles", "konaste game profile")
@@ -91,7 +92,7 @@ command string supports the following placeholders:
       if (options.delete && name) {
         delete config.profiles[name];
       } else if (options.command && name) {
-        config.profiles[name] = { command: options.command };
+        config.profiles[name] = { command: options.command, cwd: options.cwd };
       }
 
       if (options.default) {
@@ -252,21 +253,10 @@ function runCommand(def: GameDefinition) {
   return new Command()
     .description(
       "Open the login page in a browser if url is not provided, otherwise run the game with the given URL",
-    )
+  )
+    .option("--no-notify", "Do not send a notification")
     .arguments("[url:string]")
-    .error(async (error, cmd) => {
-      if (error instanceof ValidationError) {
-        cmd.showHelp();
-        Deno.exit(1);
-      }
-
-      // This command is expected to be run from a desktop entry, so notify the user
-      await $`notify-send --app-name ${def.name} --urgency=critical --icon=${def.id} "Failed to run ${def.id}" "${error.message}"`
-        .noThrow();
-
-      throw error;
-    })
-    .action(async (_, url) => {
+    .action(async (options, url) => {
       if (!url) {
         await $`xdg-open ${def.loginUrl}`;
         return;
@@ -277,8 +267,10 @@ function runCommand(def: GameDefinition) {
       const config = await readConfig(def.id);
 
       // This command is expected to be run from a desktop entry, so notify the user
-      await $`notify-send --app-name ${def.name} --urgency=low --icon=${def.id} --expire-time=5000 "Launching ${def.name}"`
-        .noThrow();
+      if (options.notify) {
+        await $`notify-send --app-name ${def.name} --urgency=low --icon=${def.id} --expire-time=5000 "Launching ${def.name}"`
+          .noThrow();
+      }
 
       const parsed = new URL(url);
       const token = parsed.searchParams.get("tk");
@@ -295,7 +287,7 @@ function runCommand(def: GameDefinition) {
           const profileNames = Object.keys(config.profiles);
           if (profileNames.length === 0) {
             throw new Error("No profiles available for this game");
-          } else {
+          } else if (options.notify) {
             const actions = profileNames.map((
               name,
             ) => ($.escapeArg(`--action=${name}=${name}`)));
@@ -305,6 +297,8 @@ function runCommand(def: GameDefinition) {
               } ${"Select a profile to run"}`.noThrow().text();
             $.logLight(`Selected profile: ${JSON.stringify(selected)}`);
             return profileNames.includes(selected) ? selected : undefined;
+          } else {
+            return undefined;
           }
         }
       })();
@@ -341,7 +335,9 @@ function runCommand(def: GameDefinition) {
             ),
         );
 
-      await $.raw`${command}`.env(config.env).printCommand();
+      const cmd0 = $.raw`${command}`.env(config.env).printCommand();
+      const cmd = profile.cwd ? cmd0.cwd(profile.cwd) : cmd0;
+      await cmd;
     });
 }
 

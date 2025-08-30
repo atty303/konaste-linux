@@ -1,5 +1,6 @@
 export type GameProfile = {
   command: string;
+  cwd?: string;
 };
 
 export type GameDefinition = {
@@ -24,15 +25,14 @@ export const defaultGames: GameDefinition[] = [
     profiles: {
       launcher: {
         command:
-          "systemd-cat -t %{id} umu-run %r\\launcher\\modules\\bm2dx_launcher.exe %u",
+          "umu-run %r\\launcher\\modules\\bm2dx_launcher.exe %u",
       },
       game: {
-        command: "systemd-cat -t %{id} umu-run %r\\game\\app\\bm2dx.exe -t %t",
+        command: "umu-run %r\\game\\app\\bm2dx.exe -t %t",
       },
     },
     runProfile: "launcher",
   },
-  // /drive_c/users/steamuser/Desktop/beatmania IIDX INFINITAS.url
   {
     id: "sdvx",
     name: "SOUND VOLTEX EXCEED GEAR",
@@ -44,11 +44,11 @@ export const defaultGames: GameDefinition[] = [
     profiles: {
       launcher: {
         command:
-          "systemd-cat -t %{id} umu-run %r\\launcher\\modules\\launcher.exe %u",
+          "umu-run %r\\launcher\\modules\\launcher.exe %u",
       },
       game: {
         command:
-          "systemd-cat -t %{id} umu-run %r\\game\\modules\\sv6c.exe -t %t",
+          "umu-run %r\\game\\modules\\sv6c.exe -t %t",
       },
     },
     runProfile: "launcher",
@@ -64,7 +64,17 @@ export const defaultGames: GameDefinition[] = [
     profiles: {
       launcher: {
         command:
-          "systemd-cat -t %{id} umu-run %r\\launcher\\modules\\launcher.exe %u",
+          "umu-run %r\\launcher\\modules\\launcher.exe %u",
+      },
+      guitarfreaks: {
+        command:
+          "umu-run %r\\game\\modules\\gitadora.exe -display0 -fullscreen -fhd -t %t -gf",
+        cwd: "%r\\game",
+      },
+      drummania: {
+        command:
+          "umu-run %r\\game\\modules\\gitadora.exe -display0 -fullscreen -fhd -t %t -dm",
+        cwd: "%r\\game",
       },
     },
 

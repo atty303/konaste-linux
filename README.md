@@ -241,6 +241,14 @@ without launcher.
 - `konaste infinitas profile <name> --default`: Sets the specified profile as
   the default profile.
 
+You can use the following placeholders in the command string:
+
+- `%u`: URL passed to the game.
+- `%t`: Token from the URL.
+- `%r`: Installation directory as windows format (e.g. C:\\Games)
+- `%{key}`: The value of the game definition `key`.
+  - `%{id}`: The game ID (e.g. 'infinitas', 'sdvx', etc.).
+
 ### `konaste <game> associate`
 
 This command registers the URL scheme for the specified game in the desktop
