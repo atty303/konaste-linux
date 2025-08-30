@@ -30,7 +30,7 @@ function configCommand(def: GameDefinition) {
     .action(async (options) => {
       const defaultConfig = {
         env: {
-          WINEPREFIX: path.join(xdg.state(), "konaste", def.id),
+          WINEPREFIX: path.join(Deno.env.get("HOME") ?? "", "Games", "konaste", def.id),
           GAMEID: `umu-${def.id}`,
         },
         profiles: def.profiles,
