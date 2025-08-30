@@ -23,9 +23,6 @@ Currently, it supports the following games:
 > I only regularly play INFINITAS, SDVX, and GITADORA. For other games, I’ve
 > only verified that they launch.
 
-You can also use [konaste-buddy](https://github.com/atty303/konaste-buddy) to
-automate the login process.
-
 ## How it works
 
 Konaste games authenticate your subscription in the browser, then launch the

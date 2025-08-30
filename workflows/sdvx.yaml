@@ -1,0 +1,63 @@
+version: "0.5"
+extends: base.yaml
+
+disable_env_expansion: true
+
+environment:
+  - GAME=sdvx
+  - CONTROLLER_DEVICE=/dev/input/by-id/usb-Konami_Amusement_SOUND_VOLTEX_controller_BF002-joystick
+
+  - TWITCH_GAME_ID=1259504587
+  - TWITCH_STREAM_TITLE=VF19.00を目指して日々鍛錬
+  - TWITCH_STREAM_TAGS=LinuxGaming,bemani
+  - TWITCH_USER_DESCRIPTION=
+
+processes:
+  pre-condition:
+    command: |
+      if not ($env.CONTROLLER_DEVICE | path exists) {
+        print -e s"Controller device not found: ($env.CONTROLLER_DEVICE)"
+        exit 1
+      }
+
+      let buttons = (konaste controller read -d $env.CONTROLLER_DEVICE | from json | where type == "button")
+      if ($buttons | where number == 0).value == 1 {
+        print -e "Aborting because the start button is pressed"
+        exit 1
+      }
+
+      if ($buttons | where value == 1 | length) > 0 {
+        print "Skipping stream start because the controller buttons are pressed"
+        rm -f $env.START_STREAMING_FILE
+      } else {
+        touch $env.START_STREAMING_FILE
+      }
+
+    availability:
+      restart: exit_on_failure
+
+  # OBS WebSocket Proxy for extension
+  obs-ws-proxy:
+    command: "konaste $env.GAME obs-websocket-proxy"
+    availability:
+      restart: on_failure
+    readiness_probe:
+      exec:
+        command: test $(curl -f -s -w "%{http_code}" http://localhost:4456) = '426'
+    depends_on:
+      obs:
+        condition: process_healthy
+
+  # extension: https://github.com/dj-kata/sdvx_helper
+  extension:
+    # It's a normal Windows application, so we run it without Proton
+    command: /var/lib/flatpak/exports/bin/org.winehq.Wine sdvx_helper.exe
+    working_dir: /home/atty/Applications/sdvx_helper
+    shutdown:
+      # command: /var/lib/flatpak/exports/bin/org.winehq.Wine cmd /c "taskkill /im sdvx_helper.exe"
+      command: hyprctl dispatch closewindow class:sdvx_helper.exe
+    depends_on:
+      obs:
+        condition: process_healthy
+      obs-ws-proxy:
+        condition: process_healthy

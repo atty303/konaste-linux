@@ -24,8 +24,7 @@ export const defaultGames: GameDefinition[] = [
     registryKey: "Software\\KONAMI\\beatmania IIDX INFINITAS",
     profiles: {
       launcher: {
-        command:
-          "umu-run %r\\launcher\\modules\\bm2dx_launcher.exe %u",
+        command: "umu-run %r\\launcher\\modules\\bm2dx_launcher.exe %u",
       },
       game: {
         command: "umu-run %r\\game\\app\\bm2dx.exe -t %t",
@@ -43,12 +42,10 @@ export const defaultGames: GameDefinition[] = [
     registryKey: "Software\\KONAMI\\SOUND VOLTEX EXCEED GEAR",
     profiles: {
       launcher: {
-        command:
-          "umu-run %r\\launcher\\modules\\launcher.exe %u",
+        command: "umu-run %r\\launcher\\modules\\launcher.exe %u",
       },
       game: {
-        command:
-          "umu-run %r\\game\\modules\\sv6c.exe -t %t",
+        command: "umu-run %r\\game\\modules\\sv6c.exe -t %t",
       },
     },
     runProfile: "launcher",
@@ -63,8 +60,7 @@ export const defaultGames: GameDefinition[] = [
     registryKey: "Software\\KONAMI\\GITADORA",
     profiles: {
       launcher: {
-        command:
-          "umu-run %r\\launcher\\modules\\launcher.exe %u",
+        command: "umu-run %r\\launcher\\modules\\launcher.exe %u",
       },
       guitarfreaks: {
         command:

@@ -1,0 +1,45 @@
+version: "0.5"
+extends: base.yaml
+
+disable_env_expansion: true
+
+environment:
+  - GAME=infinitas
+  - CONTROLLER_DEVICE=/dev/input/js0
+
+  - TWITCH_GAME_ID=1055720961
+  - TWITCH_STREAM_TITLE=低難易度からリハビリする。ついでに正規厨も卒業する
+  - TWITCH_STREAM_TAGS=LinuxGaming,bemani
+  - TWITCH_USER_DESCRIPTION=
+
+processes:
+  pre-condition:
+    command: |
+      if not ($env.CONTROLLER_DEVICE | path exists) {
+        print -e s"Controller device not found: ($env.CONTROLLER_DEVICE)"
+        exit 1
+      }
+
+      let buttons = (konaste controller read -d $env.CONTROLLER_DEVICE | from json | where type == "button")
+      if ($buttons | where number == 0).value == 1 {
+        print -e "Aborting because the start button is pressed"
+        exit 1
+      }
+
+      if ($buttons | where value == 1 | length) > 0 {
+        print "Skipping stream start because the controller buttons are pressed"
+        rm -f $env.START_STREAMING_FILE
+      } else {
+        touch $env.START_STREAMING_FILE
+      }
+
+    availability:
+      restart: exit_on_failure
+
+  # extension: https://github.com/dj-kata/inf_daken_counter_obsw
+  extension:
+    command: ^/var/home/atty/Applications/inf-notebook/.venv/bin/python main.pyw
+    working_dir: /home/atty/Applications/inf-notebook
+    depends_on:
+      obs:
+        condition: process_healthy

@@ -9,6 +9,9 @@ import { configDir } from "./config.ts";
 import $ from "@david/dax";
 import * as path from "jsr:@std/path";
 import versionJson from "../version.json" with { type: "json" };
+import { browserCommand } from "./browser.ts";
+import { controllerCommand } from "./controller.ts";
+import { secretCommand } from "./secret.ts";
 
 const games = [...defaultGames];
 
@@ -62,7 +65,10 @@ const cmd = new Command()
         }: ${game.name} - ${colors.blue.underline(game.loginUrl)}`,
       );
     }
-  });
+  })
+  .command("browser", browserCommand)
+  .command("controller", controllerCommand)
+  .command("secret", secretCommand);
 
 games.forEach((game) => {
   cmd.command(game.id, gameCommand(game));

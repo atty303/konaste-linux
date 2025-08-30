@@ -2,7 +2,7 @@ import * as path from "jsr:@std/path";
 import * as pathWin from "jsr:@std/path/windows";
 import xdg from "@404wolf/xdg-portable";
 import { colors } from "@cliffy/ansi/colors";
-import { Command, ValidationError } from "@cliffy/command";
+import { Command } from "@cliffy/command";
 import {
   GameConfig,
   readConfig,
@@ -30,7 +30,12 @@ function configCommand(def: GameDefinition) {
     .action(async (options) => {
       const defaultConfig = {
         env: {
-          WINEPREFIX: path.join(Deno.env.get("HOME") ?? "", "Games", "konaste", def.id),
+          WINEPREFIX: path.join(
+            Deno.env.get("HOME") ?? "",
+            "Games",
+            "konaste",
+            def.id,
+          ),
           GAMEID: `umu-${def.id}`,
         },
         profiles: def.profiles,
@@ -80,7 +85,7 @@ command string supports the following placeholders:
     .option(
       "--command <command:string>",
       `Set the launch command for the profile`,
-  )
+    )
     .option("--cwd <dir:file>", "Set the working directory for the profile")
     .option("--delete", "Delete the profile")
     .arguments("[name:string]")
@@ -253,7 +258,7 @@ function runCommand(def: GameDefinition) {
   return new Command()
     .description(
       "Open the login page in a browser if url is not provided, otherwise run the game with the given URL",
-  )
+    )
     .option("--no-notify", "Do not send a notification")
     .arguments("[url:string]")
     .action(async (options, url) => {

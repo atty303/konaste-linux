@@ -1,0 +1,96 @@
+version: "0.5"
+
+# Requirements:
+# - Bazzite Desktop (KDE Plasma)
+# - ubi -i ~/.local/bin -p F1bonacc1/process-compose
+# - konaste-linux configured
+# - OBS Studio configured with WebSocket
+# - ubi -i ~/.local/bin -p grigio/obs-cmd
+# - twitch-cli configured : brew install twitch-cli
+
+log_level: debug
+log_configuration:
+  disable_json: true
+  add_timestamp: true
+log_location: /tmp/konaste.log
+
+disable_env_expansion: true
+shell:
+  shell_command: nu
+  shell_argument: "-c"
+
+environment:
+  # - GAME=infinitas
+  - TWITCH_BROADCASTER_ID=141025463
+  # - TWITCH_GAME_ID=1055720961
+  # - TWITCH_STREAM_TITLE=Linuxに移行したので環境構築のテストプレイ [Playing on Linux]
+  # - TWITCH_STREAM_TAGS=LinuxGaming,bemani
+  # - TWITCH_USER_DESCRIPTION=
+
+  - BROWSER_EXE=/var/lib/flatpak/exports/bin/com.google.Chrome
+  - OBS_WEBSOCKET=localhost:4455
+  - START_STREAMING_FILE=/tmp/konaste-start-streaming
+
+processes:
+  game:
+    environment:
+    command: |
+      let game = (konaste ls --json | from json | where id == $env.GAME)
+      let run_url = (konaste browser launch --browser $env.BROWSER_EXE --url ($game | get loginUrl).0 --scheme ($game | get urlScheme).0)
+
+      vkcube --c 1
+      konaste $env.GAME run $run_url
+    availability:
+      # Exit the whole processes when the game ends
+      exit_on_end: true
+    depends_on:
+      pre-condition:
+        condition: process_completed_successfully
+
+  # OBS Studio for streaming
+  obs:
+    command: /var/lib/flatpak/exports/bin/com.obsproject.Studio --disable-shutdown-check
+    # Ready when the OBS WebSocket is ready
+    readiness_probe:
+      initial_delay_seconds: 10
+      period_seconds: 1
+      failure_threshold: 5
+      exec:
+        # This doesn't respect shell configuration
+        command: test $(curl -f -s -w "%{http_code}" http://localhost:4455) = '426'
+        #command: nu -c "if (http get -ef http://localhost:4455/ | $in.status == 426) { exit 0 } else { exit 1 }"
+    # OBS does not support graceful shutdown by signal, so we have to close it by window manager
+    shutdown:
+      timeout_seconds: 10
+      command: hyprctl dispatch closewindow class:com.obsproject.Studio
+    depends_on:
+      pre-condition:
+        condition: process_completed_successfully
+
+  # Start streaming on Twitch with updated game and title
+  start-streaming:
+    command: |
+      if not ($env.START_STREAMING_FILE | path exists) {
+        print "Skipping stream start because the start file does not exist"
+        exit 1
+      }
+
+      let tags = $env.TWITCH_STREAM_TAGS | split row "," | each { [ "-q" $"tags=($in)" ] } | flatten
+      /home/linuxbrew/.linuxbrew/bin/twitch api patch /channels -q $"broadcaster_id=($env.TWITCH_BROADCASTER_ID)" -q $"game_id=($env.TWITCH_GAME_ID)" -q $"title=($env.TWITCH_STREAM_TITLE)" ...$tags | complete
+      # twitch api put /users -q description=$env.TWITCH_USER_DESCRIPTION
+
+      let ws = $"obsws://($env.OBS_WEBSOCKET)/(konaste secret export --name obs-websocket)"
+      obs-cmd -w $ws streaming start
+    depends_on:
+      game:
+        condition: process_started
+      obs:
+        condition: process_healthy
+    # When testing setup, set this to true to avoid starting the stream automatically
+    disabled: false
+
+  twitch-chat:
+    command: /var/lib/flatpak/exports/bin/com.chatterino.chatterino
+    depends_on:
+      start-streaming:
+        condition: process_completed_successfully
