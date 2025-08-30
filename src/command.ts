@@ -124,6 +124,21 @@ command string supports the following placeholders:
     });
 }
 
+function winPathToUnix(pathInWin: string, winePrefix: string): string {
+  const parsedPathWin = pathWin.parse(pathInWin);
+  const drive = parsedPathWin.root[0].toLowerCase();
+  const pathUnixInDrive = path.fromFileUrl(pathWin.toFileUrl(pathWin.format({
+    dir: `\\${parsedPathWin.dir.replace(parsedPathWin.root, "")}`,
+    base: parsedPathWin.base,
+  })));
+
+  return path.join(
+    winePrefix,
+    `drive_${drive}`,
+    pathUnixInDrive,
+  );
+}
+
 async function extractIcon(
   def: GameDefinition,
   config: GameConfig,
@@ -152,18 +167,7 @@ async function extractIcon(
     throw new Error(`No icon found for ${def.urlScheme} in registry`);
   }
 
-  const parsedPathWin = pathWin.parse(pathInWin);
-  const drive = parsedPathWin.root[0].toLowerCase();
-  const pathUnixInDrive = path.fromFileUrl(pathWin.toFileUrl(pathWin.format({
-    dir: `\\${parsedPathWin.dir.replace(parsedPathWin.root, "")}`,
-    base: parsedPathWin.base,
-  })));
-
-  const absPath = path.join(
-    config.env.WINEPREFIX,
-    `drive_${drive}`,
-    pathUnixInDrive,
-  );
+  const absPath = winPathToUnix(pathInWin, config.env.WINEPREFIX);
   $.logLight(`Absolute path to icon: ${absPath}`);
 
   const name = `${absPath}[${index}]`;
@@ -340,8 +344,18 @@ function runCommand(def: GameDefinition) {
             ),
         );
 
+      let cwd = profile.cwd;
+      if (profile.cwd) {
+        if (profile.cwd.includes("%r")) {
+          cwd = winPathToUnix(
+            profile.cwd.replace("%r", installDir?.data.toString() || ""),
+            config.env.WINEPREFIX,
+          );
+        }
+      }
+
       const cmd0 = $.raw`${command}`.env(config.env).printCommand();
-      const cmd = profile.cwd ? cmd0.cwd(profile.cwd) : cmd0;
+      const cmd = cwd ? cmd0.cwd(cwd) : cmd0;
       await cmd;
     });
 }
